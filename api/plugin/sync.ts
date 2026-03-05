@@ -11,14 +11,33 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   console.log('Method:', req.method);
   
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method Not Allowed' });
-  }
+      return res.status(405).json({ message: 'Method Not Allowed' });
+    }
+  
+    try {
+      // Helper to parse body manually if req.body fails (Vercel sometimes fails to parse JSON from Java clients)
+      let body;
+      try {
+        body = req.body;
+        // If body is undefined or empty object (and we expect data), try manual parsing
+        if (!body || (typeof body === 'object' && Object.keys(body).length === 0)) {
+           throw new Error("Body empty or not parsed");
+        }
+      } catch (e) {
+        console.log("Auto-parsing failed or empty, trying manual parse...");
+        const buffers = [];
+        for await (const chunk of req) {
+          buffers.push(chunk);
+        }
+        const data = Buffer.concat(buffers).toString();
+        console.log("Raw body data:", data);
+        if (!data) throw new Error("Empty body received");
+        body = JSON.parse(data);
+      }
 
-  try {
-    const body = req.body;
-    console.log('Request body received:', JSON.stringify(body));
-
-    const { secret, onlineCount, maxPlayers, tps, players, clans: clansList } = body;
+      console.log('Request body parsed successfully');
+  
+      const { secret, onlineCount, maxPlayers, tps, players, clans: clansList } = body;
 
     // Check API Key
     if (secret !== process.env.API_KEY) {
