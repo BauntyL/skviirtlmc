@@ -25,6 +25,15 @@ const loginSchema = z.object({
   password: z.string().min(1, "Пароль обязателен"),
 });
 
+const registerSchema = z.object({
+  username: z.string().min(1, "Никнейм обязателен"),
+  password: z.string().min(6, "Минимум 6 символов"),
+  confirmPassword: z.string().min(1, "Подтвердите пароль"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Пароли не совпадают",
+  path: ["confirmPassword"],
+});
+
 const codeLoginSchema = z.object({
   username: z.string().min(1, "Никнейм обязателен"),
   code: z.string().length(4, "Код должен состоять из 4 цифр"),
@@ -58,12 +67,18 @@ export default function AuthPage() {
 
         <div className="glass-card rounded-2xl p-2 shadow-2xl shadow-black/50">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6 bg-zinc-900/50 p-1">
+            <TabsList className="grid w-full grid-cols-3 mb-6 bg-zinc-900/50 p-1">
               <TabsTrigger
                 value="login"
                 className="data-[state=active]:bg-zinc-800"
               >
                 Пароль
+              </TabsTrigger>
+              <TabsTrigger
+                value="register"
+                className="data-[state=active]:bg-zinc-800"
+              >
+                Регистрация
               </TabsTrigger>
               <TabsTrigger
                 value="code"
@@ -75,6 +90,10 @@ export default function AuthPage() {
 
             <TabsContent value="login">
               <LoginForm />
+            </TabsContent>
+
+            <TabsContent value="register">
+              <RegisterForm />
             </TabsContent>
 
             <TabsContent value="code">
@@ -170,6 +189,120 @@ function LoginForm() {
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               "Войти"
+            )}
+          </Button>
+        </form>
+      </Form>
+    </div>
+  );
+}
+
+function RegisterForm() {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
+
+  const registerMutation = useMutation({
+    mutationFn: async (data: z.infer<typeof registerSchema>) => {
+      const payload = { username: data.username, password: data.password };
+      const res = await apiRequest("POST", "/api/auth/register", payload);
+      return await res.json();
+    },
+    onSuccess: (user) => {
+      queryClient.setQueryData(["/api/auth/me"], user);
+      setLocation("/dashboard");
+      toast({ title: "Аккаунт создан" });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Ошибка регистрации",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  return (
+    <div className="p-4 sm:p-6 pt-0">
+      <div className="bg-primary/5 border border-primary/10 rounded-lg p-4 mb-6 text-sm text-zinc-400">
+        После регистрации зайдите в профиль и привяжите Minecraft аккаунт.
+      </div>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit((data) => registerMutation.mutate(data))}
+          className="space-y-4"
+        >
+          <FormField
+            control={form.control}
+            name="username"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-zinc-300">Никнейм</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Steve"
+                    className="bg-zinc-900/50 border-zinc-800 focus-visible:ring-primary"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-zinc-300">Пароль</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    className="bg-zinc-900/50 border-zinc-800 focus-visible:ring-primary"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="confirmPassword"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-zinc-300">Повторите пароль</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    className="bg-zinc-900/50 border-zinc-800 focus-visible:ring-primary"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <Button
+            type="submit"
+            className="w-full bg-primary text-zinc-950 font-bold hover:bg-primary/90 mt-6 h-12"
+            disabled={registerMutation.isPending}
+          >
+            {registerMutation.isPending ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              "Создать аккаунт"
             )}
           </Button>
         </form>
