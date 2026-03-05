@@ -52,15 +52,23 @@ export default function Dashboard() {
                   <Coins className="w-5 h-5 text-yellow-500" />
                   <span className="font-medium">In-Game Balance</span>
                 </div>
-                <span className="font-mono font-bold text-white">${user.balance.toLocaleString()}</span>
+                <span className="font-mono font-bold text-white">${(user.balance || 0).toLocaleString()}</span>
               </div>
               
+              <div className="flex justify-between items-center p-3 rounded-lg bg-zinc-900/50 border border-white/5">
+                <div className="flex items-center gap-3 text-zinc-300">
+                  <Users className="w-5 h-5 text-indigo-400" />
+                  <span className="font-medium">Clan</span>
+                </div>
+                <span className="font-mono font-bold text-indigo-400">{user.clan || "No Clan"}</span>
+              </div>
+
               <div className="flex justify-between items-center p-3 rounded-lg bg-zinc-900/50 border border-white/5">
                 <div className="flex items-center gap-3 text-zinc-300">
                   <Wallet className="w-5 h-5 text-primary" />
                   <span className="font-medium">Real Balance</span>
                 </div>
-                <span className="font-mono font-bold text-primary">{user.realBalance.toLocaleString()} Credits</span>
+                <span className="font-mono font-bold text-primary">{(user.realBalance || 0).toLocaleString()} Credits</span>
               </div>
             </div>
           </div>

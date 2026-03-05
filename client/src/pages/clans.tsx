@@ -51,8 +51,8 @@ export default function Clans() {
                   <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Ранг</th>
                   <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Название Клана</th>
                   <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Лидер</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Замы</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Уровень</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">KDR</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Баланс</th>
                   <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Участники</th>
                 </tr>
               </thead>
@@ -75,11 +75,11 @@ export default function Clans() {
                       <span className="text-primary font-medium">{clan.leader}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
-                      {clan.coLeaders || "Нет"}
+                      {clan.kdr || "0.0"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-white font-mono text-sm">
-                        Lvl {clan.level}
+                        ${clan.balance || "0"}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">

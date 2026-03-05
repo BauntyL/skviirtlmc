@@ -1,14 +1,13 @@
 // @ts-ignore
 import { db } from "../lib/db.js";
 // @ts-ignore
-import { users } from "../../shared/schema.js";
+import { users, clans, serverStats } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Debug log
   console.log('Sync endpoint hit');
-  console.log('Method:', req.method);
   
   if (req.method !== 'POST') {
       return res.status(405).json({ message: 'Method Not Allowed' });
@@ -30,7 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           buffers.push(chunk);
         }
         const data = Buffer.concat(buffers).toString();
-        console.log("Raw body data:", data);
+        // console.log("Raw body data:", data); // Don't log full data in production
         if (!data) throw new Error("Empty body received");
         body = JSON.parse(data);
       }
@@ -49,6 +48,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
   
     console.log(`Sync received: ${onlineCount}/${maxPlayers} TPS: ${tps}`);
+
+    // Update Server Stats (Online Count)
+    try {
+        // We use ID 1 for global stats
+        const existingStats = await db.select().from(serverStats).where(eq(serverStats.id, 1));
+        if (existingStats.length === 0) {
+            await db.insert(serverStats).values({ 
+                id: 1, 
+                onlineCount, 
+                maxPlayers, 
+                tps: tps?.toString(),
+                lastUpdated: new Date().toISOString()
+            });
+        } else {
+            await db.update(serverStats).set({ 
+                onlineCount, 
+                maxPlayers, 
+                tps: tps?.toString(),
+                lastUpdated: new Date().toISOString()
+            }).where(eq(serverStats.id, 1));
+        }
+    } catch (e) {
+        console.error("Failed to update server stats:", e);
+    }
   
     // Update players data (balance, clan, etc.)
     if (Array.isArray(players)) {
@@ -69,20 +92,47 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
              }
           } catch (e) {}
 
-          // We found the user!
-          console.log(`Updating user ${user.username} (ID: ${user.id})`);
+          console.log(`Updating user ${user.username} (ID: ${user.id}) - Balance: ${balance}, Clan: ${p.clan}`);
           
-          // If you add 'balance' and 'clan' to schema, uncomment below:
-          /*
           await db.update(users)
             .set({ 
-               // balance: isNaN(balance) ? 0 : balance,
-               // clan: p.clan
+               balance: isNaN(balance) ? 0 : Math.round(balance), // Store as integer (cents) or simple int if currency is simple
+               clan: p.clan,
+               rank: p.rank
             })
             .where(eq(users.id, user.id));
-          */
         }
       }
+    }
+
+    // Update Clans List
+    if (Array.isArray(clansList)) {
+        console.log(`Processing ${clansList.length} clans`);
+        // For simplicity, we can upsert clans. 
+        // Note: Ideally we should handle deletions too (clans that no longer exist), but for a top list sync, upsert is okay.
+        for (const c of clansList) {
+            if (!c.name) continue;
+
+            const foundClans = await db.select().from(clans).where(eq(clans.name, c.name));
+            
+            if (foundClans.length === 0) {
+                await db.insert(clans).values({
+                    name: c.name,
+                    leader: c.leader,
+                    balance: c.balance?.toString(),
+                    kdr: c.kdr?.toString(),
+                    rank: c.rank,
+                    membersCount: 0 // Placeholder
+                });
+            } else {
+                await db.update(clans).set({
+                    leader: c.leader,
+                    balance: c.balance?.toString(),
+                    kdr: c.kdr?.toString(),
+                    rank: c.rank
+                }).where(eq(clans.name, c.name));
+            }
+        }
     }
   
     // Return success

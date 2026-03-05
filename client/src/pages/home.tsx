@@ -3,10 +3,15 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Home() {
   const { toast } = useToast();
   const serverIP = "skviirtl.vanilla.cool";
+
+  const { data: stats } = useQuery({
+    queryKey: ["/api/stats"],
+  });
 
   const copyIp = () => {
     navigator.clipboard.writeText(serverIP);
@@ -52,7 +57,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
               </span>
-              Версия 1.16.5 - 1.21.11
+              {stats?.onlineCount !== undefined ? `Онлайн: ${stats.onlineCount} / ${stats.maxPlayers || 20}` : "Версия 1.16.5 - 1.21.11"}
             </div>
             
             <h1 className="text-5xl md:text-7xl font-display font-black text-white mb-6 tracking-tight drop-shadow-xl">
