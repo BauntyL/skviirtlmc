@@ -1,7 +1,7 @@
 // @ts-ignore
-import { db } from "../lib/db.js";
+import { db } from "./lib/db.js";
 // @ts-ignore
-import { serverStats } from "../../shared/schema.js";
+import { serverStats } from "../shared/schema.js";
 import { eq } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
