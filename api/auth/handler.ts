@@ -16,7 +16,13 @@ async function hashPassword(password: string) {
 }
 
 async function comparePasswords(supplied: string, stored: string) {
+  if (!stored || !stored.includes(".")) {
+    // Legacy plain text password check (for migration) or bad format
+    if (stored === supplied) return true;
+    return false;
+  }
   const [hashed, salt] = stored.split(".");
+  if (!salt) return false;
   const buf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return buf.toString("hex") === hashed;
 }
