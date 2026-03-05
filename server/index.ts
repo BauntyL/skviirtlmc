@@ -59,50 +59,56 @@ app.use((req, res, next) => {
   next();
 });
 
-(async () => {
-  await registerRoutes(httpServer, app);
+// For Vercel, we need to export the app directly without async wrapper
+// Or ensure routes are registered before export.
+// Since registerRoutes is async, we can't make top-level await work everywhere easily.
+// But we can attach routes.
 
-  app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+// Modifying registerRoutes to be synchronous or handle async internally if possible,
+// OR simply call it and hope it resolves quickly (bad practice but common).
+// BETTER APPROACH: Export a function that Vercel calls, or use a pattern where app is fully configured.
 
-    console.error("Internal Server Error:", err);
+// Let's make registerRoutes setup the app immediately.
+registerRoutes(httpServer, app);
 
-    if (res.headersSent) {
-      return next(err);
-    }
+app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
 
-    return res.status(status).json({ message });
-  });
+  console.error("Internal Server Error:", err);
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (process.env.NODE_ENV === "production") {
-    serveStatic(app);
-  } else {
-    const { setupVite } = await import("./vite");
-    await setupVite(httpServer, app);
+  if (res.headersSent) {
+    return next(err);
   }
 
-  // ALWAYS serve the app on the port specified in the environment variable PORT
-  // Other ports are firewalled. Default to 5000 if not specified.
-  // this serves both the API and the client.
-  // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
-  // Only listen if not imported (Vercel imports this file)
-  if (import.meta.url === `file://${process.argv[1]}`) {
-    httpServer.listen(
-        {
-        port,
-        host: "0.0.0.0",
-        reusePort: true,
-        },
-        () => {
-        log(`serving on port ${port}`);
-        },
-    );
-  }
-})();
+  return res.status(status).json({ message });
+});
+
+// Serve static only in dev or if not on Vercel (Vercel handles static via output config)
+if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
+  (async () => {
+      const { setupVite } = await import("./vite");
+      await setupVite(httpServer, app);
+  })();
+}
+
+// ALWAYS serve the app on the port specified in the environment variable PORT
+// Other ports are firewalled. Default to 5000 if not specified.
+// this serves both the API and the client.
+// It is the only port that is not firewalled.
+const port = parseInt(process.env.PORT || "5000", 10);
+// Only listen if not imported (Vercel imports this file)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  httpServer.listen(
+      {
+      port,
+      host: "0.0.0.0",
+      reusePort: true,
+      },
+      () => {
+      log(`serving on port ${port}`);
+      },
+  );
+}
 
 export default app;

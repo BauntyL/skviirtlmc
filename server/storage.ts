@@ -1,8 +1,11 @@
+import { db } from "./db";
 import { users, clans, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
+import { eq } from "drizzle-orm";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
+const PostgresStore = connectPg(session);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -13,50 +16,36 @@ export interface IStorage {
   sessionStore: session.Store;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private clans: Map<number, Clan>;
-  currentUserId: number;
-  currentClanId: number;
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.clans = new Map();
-    this.currentUserId = 1;
-    this.currentClanId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
-    });
+    this.sessionStore = new PostgresStore({ pool, createTableIfMissing: true });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async getClans(): Promise<Clan[]> {
-    return Array.from(this.clans.values());
+    return await db.select().from(clans);
   }
 
   async createClan(insertClan: InsertClan): Promise<Clan> {
-    const id = this.currentClanId++;
-    const clan: Clan = { ...insertClan, id };
-    this.clans.set(id, clan);
+    const [clan] = await db.insert(clans).values(insertClan).returning();
     return clan;
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
