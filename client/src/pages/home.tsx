@@ -4,12 +4,13 @@ import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
+import type { ServerStats } from "@shared/schema";
 
 export default function Home() {
   const { toast } = useToast();
   const serverIP = "skviirtl.vanilla.cool";
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<ServerStats>({
     queryKey: ["/api/stats"],
   });
 

@@ -1,11 +1,9 @@
-// @ts-ignore
-import { db } from "../lib/db.js";
-// @ts-ignore
-import { users, authCodes } from "../../shared/schema.js";
+import { db } from "../lib/db";
+import { users, authCodes } from "../../shared/schema";
 import { eq, and, gt, sql } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getIronSession } from "iron-session";
-import { sessionOptions } from "../lib/session.js";
+import { getIronSession, SessionData } from "iron-session";
+import { sessionOptions } from "../lib/session";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 
@@ -40,7 +38,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Get action type from query or body
   const type = req.query.type || req.body.type;
-  const session = await getIronSession(req, res, sessionOptions);
+  const session = await getIronSession<SessionData>(req, res, sessionOptions);
 
   try {
     // === REGISTER ===

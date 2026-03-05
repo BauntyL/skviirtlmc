@@ -15,6 +15,10 @@ const userWithoutPassword = z.object({
   realBalance: z.number().default(0),
   clan: z.string().nullable().optional(),
   rank: z.string().nullable().optional(),
+  role: z.string().optional(),
+  kills: z.number().default(0),
+  deaths: z.number().default(0),
+  minecraftUuid: z.string().nullable().optional(),
 });
 
 export const api = {

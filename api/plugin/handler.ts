@@ -1,7 +1,5 @@
-// @ts-ignore
-import { db } from "../lib/db.js";
-// @ts-ignore
-import { users, clans, serverStats, authCodes } from "../../shared/schema.js";
+import { db } from "../lib/db";
+import { users, clans, serverStats, authCodes } from "../../shared/schema";
 import { eq, sql, and, gt } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 

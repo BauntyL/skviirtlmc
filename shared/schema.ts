@@ -10,6 +10,7 @@ export const users = pgTable("users", {
   realBalance: integer("real_balance").default(0).notNull(),
   clan: text("clan"), // Clan name string from plugin
   rank: text("rank"),
+  role: text("role").default("user"),
   kills: integer("kills").default(0),
   deaths: integer("deaths").default(0),
   minecraftUuid: text("minecraft_uuid"), // For verified linking

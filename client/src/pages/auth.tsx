@@ -31,7 +31,7 @@ const codeLoginSchema = z.object({
 });
 
 export default function AuthPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { data: user, isLoading: authLoading } = useAuth();
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
