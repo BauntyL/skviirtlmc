@@ -1,32 +1,20 @@
 import { db } from "./db";
-import { users, clans, serverStats, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
+import { users, clans, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
 import { eq } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import pg from "pg";
+import { pool } from "./db";
 
 const PostgresStore = connectPg(session);
-
-// Create a pg pool for session store (connect-pg-simple needs 'pg' pool, not 'postgres-js')
-const sessionPool = new pg.Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
-});
 
 export function setupAuth(app: any) {
   app.use(
     session({
-      store: new PostgresStore({ 
-        pool: sessionPool, 
-        createTableIfMissing: true 
-      }),
+      store: new PostgresStore({ pool, createTableIfMissing: true }),
       secret: process.env.SESSION_SECRET || "skviirtl_secret",
       resave: false,
       saveUninitialized: false,
-      cookie: { 
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-      }, 
+      cookie: { secure: false }, // Set to true in production with HTTPS
     })
   );
 }
@@ -37,106 +25,31 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getClans(): Promise<Clan[]>;
   createClan(clan: InsertClan): Promise<Clan>;
-  updateServerStats(stats: any): Promise<void>;
-  getServerStats(): Promise<any>;
 }
 
 export class DatabaseStorage implements IStorage {
-  // In-memory fallback for when DB is not available
-  private memoryStats: any = { onlineCount: 0, maxPlayers: 100, tps: "20.0", players: [] };
-
   async getUser(id: number): Promise<User | undefined> {
-    try {
-        const [user] = await db.select().from(users).where(eq(users.id, id));
-        return user;
-    } catch (e) {
-        return undefined;
-    }
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    try {
-        const [user] = await db.select().from(users).where(eq(users.username, username));
-        return user;
-    } catch (e) {
-        return undefined;
-    }
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    try {
-        const [user] = await db.insert(users).values(insertUser).returning();
-        return user;
-    } catch (e) {
-        // Fallback mock user if DB fails (for dev only)
-        return { ...insertUser, id: 1, isAdmin: 0 } as unknown as User;
-    }
+    const [user] = await db.insert(users).values(insertUser).returning();
+    return user;
   }
 
   async getClans(): Promise<Clan[]> {
-    try {
-        return await db.select().from(clans);
-    } catch (e) {
-        return [];
-    }
+    return await db.select().from(clans);
   }
 
   async createClan(insertClan: InsertClan): Promise<Clan> {
-    try {
-        const [clan] = await db.insert(clans).values(insertClan).returning();
-        return clan;
-    } catch (e) {
-        throw new Error("DB error");
-    }
-  }
-
-  async updateServerStats(stats: any): Promise<void> {
-    // Always update memory first (fastest)
-    this.memoryStats = {
-        onlineCount: stats.onlineCount,
-        maxPlayers: stats.maxPlayers,
-        tps: stats.tps,
-        players: stats.players || []
-    };
-
-    try {
-        // Try to persist to DB
-        const [existing] = await db.select().from(serverStats).limit(1);
-        
-        const updateData = {
-            onlineCount: stats.onlineCount,
-            maxPlayers: stats.maxPlayers,
-            tps: stats.tps,
-            playersData: JSON.stringify(stats.players || []),
-            lastUpdated: new Date().toISOString()
-        };
-
-        if (existing) {
-            await db.update(serverStats).set(updateData).where(eq(serverStats.id, existing.id));
-        } else {
-            await db.insert(serverStats).values(updateData);
-        }
-    } catch (e) {
-        // Ignore DB errors for stats, memory is enough for local
-    }
-  }
-
-  async getServerStats(): Promise<any> {
-    try {
-        const [stats] = await db.select().from(serverStats).limit(1);
-        if (stats) {
-            // Update memory cache from DB (if we are a fresh instance)
-            this.memoryStats = {
-                onlineCount: stats.onlineCount,
-                maxPlayers: stats.maxPlayers,
-                tps: stats.tps,
-                players: JSON.parse(stats.playersData || "[]")
-            };
-        }
-    } catch (e) {
-        // DB failed, use memory
-    }
-    return this.memoryStats;
+    const [clan] = await db.insert(clans).values(insertClan).returning();
+    return clan;
   }
 }
 

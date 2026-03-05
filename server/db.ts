@@ -1,6 +1,8 @@
-import { drizzle } from "drizzle-orm/postgres-js";
-import postgres from "postgres";
+import { drizzle } from "drizzle-orm/node-postgres";
+import pg from "pg";
 import * as schema from "@shared/schema";
+
+const { Pool } = pg;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
@@ -8,6 +10,5 @@ if (!process.env.DATABASE_URL) {
   );
 }
 
-export const queryClient = postgres(process.env.DATABASE_URL);
-export const db = drizzle(queryClient, { schema });
-export const pool = queryClient; // Re-export as pool for session store (postgres-js works slightly differently but connect-pg-simple handles it or we use pg)
+export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+export const db = drizzle(pool, { schema });
