@@ -2,8 +2,12 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/index.js"
+      "source": "/api/auth/register",
+      "destination": "/api/auth/register.ts"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/auth/login.ts"
     },
     {
       "source": "/(.*)",
