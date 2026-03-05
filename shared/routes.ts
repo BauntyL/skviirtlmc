@@ -11,9 +11,10 @@ export const errorSchemas = {
 const userWithoutPassword = z.object({
   id: z.number(),
   username: z.string(),
-  balance: z.number(),
-  realBalance: z.number(),
-  clanId: z.number().nullable(),
+  balance: z.number().default(0),
+  realBalance: z.number().default(0),
+  clan: z.string().nullable().optional(),
+  rank: z.string().nullable().optional(),
 });
 
 export const api = {
