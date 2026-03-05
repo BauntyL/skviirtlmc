@@ -1,6 +1,6 @@
 import { db } from "../lib/db.js";
 import { users, clans, serverStats, authCodes } from "../../shared/schema.js";
-import { eq, sql, and, gt } from "drizzle-orm";
+import { eq, sql, and, gt, or } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -165,7 +165,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 }
 
                 // Update User
-                const foundUsers = await db.select().from(users).where(eq(users.username, p.name));
+                const foundUsers = p.uuid
+                    ? await db.select().from(users).where(or(eq(users.minecraftUuid, p.uuid), eq(users.username, p.name)))
+                    : await db.select().from(users).where(eq(users.username, p.name));
                 const user = foundUsers[0];
                 if (user) {
                     let balance = 0, realBalance = 0, kills = 0, deaths = 0;
