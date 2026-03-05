@@ -10,12 +10,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   // Basic API Key check
   let body: any = {};
-  try {
-    body = req.body || {};
-  } catch (e) {
-    console.error("Error accessing req.body:", e);
-  }
   
+  // Vercel serverless functions body parsing fix
+  if (req.body && typeof req.body === 'object') {
+      body = req.body;
+  } else if (req.body && typeof req.body === 'string') {
+      try {
+          body = JSON.parse(req.body);
+      } catch (e) {
+          console.error("Failed to parse body string:", e);
+      }
+  }
+
   const query = req.query || {};
   const apiKey = body.secret || query.secret;
   const validKey = process.env.API_KEY || "skviirtl_secret_key_123";

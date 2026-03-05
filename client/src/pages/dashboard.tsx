@@ -123,7 +123,7 @@ export default function Dashboard() {
                 <DialogTrigger asChild>
                     <Button 
                         variant="outline" 
-                        className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
+                        className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10 cursor-pointer pointer-events-auto relative z-50"
                     >
                         {user.minecraftUuid ? "Перепривязать аккаунт" : "Привязать аккаунт"}
                     </Button>
