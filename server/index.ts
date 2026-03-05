@@ -22,8 +22,11 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
   throw err;
 });
 
-// Start server if running directly
-if (require.main === module) {
+// Start server if running directly (ESM compatible check)
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+if (process.argv[1] === __filename) {
   const PORT = process.env.PORT || 5001;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
