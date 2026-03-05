@@ -1,9 +1,9 @@
-import { db } from "../lib/db";
-import { users, authCodes } from "../../shared/schema";
+import { db } from "../lib/db.js";
+import { users, authCodes } from "../../shared/schema.js";
 import { eq, and, gt, sql } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { getIronSession, SessionData } from "iron-session";
-import { sessionOptions } from "../lib/session";
+import { sessionOptions } from "../lib/session.js";
 import { scrypt, randomBytes } from "crypto";
 import { promisify } from "util";
 

@@ -1,5 +1,5 @@
-import { db } from "../lib/db";
-import { users, clans, serverStats, authCodes } from "../../shared/schema";
+import { db } from "../lib/db.js";
+import { users, clans, serverStats, authCodes } from "../../shared/schema.js";
 import { eq, sql, and, gt } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 

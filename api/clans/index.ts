@@ -1,6 +1,4 @@
-// @ts-ignore
 import { db } from "../lib/db.js";
-// @ts-ignore
 import { clans } from "../../shared/schema.js";
 import { desc } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
