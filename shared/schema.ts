@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   rank: text("rank"),
   kills: integer("kills").default(0),
   deaths: integer("deaths").default(0),
+  minecraftUuid: text("minecraft_uuid"), // For verified linking
 });
 
 export const clans = pgTable("clans", {
@@ -42,7 +43,14 @@ export const insertServerStatsSchema = createInsertSchema(serverStats).omit({ id
 
 export const authCodes = pgTable("auth_codes", {
   id: serial("id").primaryKey(),
-  username: text("username").notNull(),
+  userId: integer("user_id"), // Optional: if linking existing account
+  username: text("username").notNull(), // Optional? No, need to know who generated it if not logged in.
+  // Actually, for linking: User on site generates code -> Code stored with userId -> User sends code in game -> Plugin sends code + MC Name -> Link.
+  // For login: Plugin generates code -> User enters code + MC Name on site -> Login.
+  
+  // Let's support both or just clarify.
+  // The user asked for: "On site click button -> Modal with /link 1234 -> User types in game -> Site notifies".
+  // This is Site-generated code.
   code: text("code").notNull(),
   expiresAt: text("expires_at").notNull(), // ISO date string
 });
