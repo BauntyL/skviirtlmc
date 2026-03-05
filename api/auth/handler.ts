@@ -1,0 +1,163 @@
+// @ts-ignore
+import { db } from "../lib/db.js";
+// @ts-ignore
+import { users, authCodes } from "../../shared/schema.js";
+import { eq, and, gt, sql } from "drizzle-orm";
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getIronSession } from "iron-session";
+import { sessionOptions } from "../lib/session.js";
+import { scrypt, randomBytes } from "crypto";
+import { promisify } from "util";
+
+const scryptAsync = promisify(scrypt);
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16).toString("hex");
+  const buf = (await scryptAsync(password, salt, 64)) as Buffer;
+  return `${buf.toString("hex")}.${salt}`;
+}
+
+async function comparePasswords(supplied: string, stored: string) {
+  const [hashed, salt] = stored.split(".");
+  const buf = (await scryptAsync(supplied, salt, 64)) as Buffer;
+  return buf.toString("hex") === hashed;
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  // CORS Headers
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+  );
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Get action type from query or body
+  const type = req.query.type || req.body.type;
+  const session = await getIronSession(req, res, sessionOptions);
+
+  try {
+    // === REGISTER ===
+    if (type === 'register') {
+        const { username, password } = req.body;
+        if (!username || !password) return res.status(400).json({ message: "Missing fields" });
+
+        const existingUser = await db.select().from(users).where(eq(users.username, username));
+        if (existingUser.length > 0) return res.status(400).json({ message: "Username already exists" });
+
+        const hashedPassword = await hashPassword(password);
+        const [user] = await db.insert(users).values({
+            username,
+            password: hashedPassword,
+            balance: 0,
+            role: "user"
+        }).returning();
+
+        session.userId = user.id;
+        await session.save();
+        
+        const { password: _, ...userWithoutPassword } = user;
+        return res.status(201).json(userWithoutPassword);
+    }
+
+    // === LOGIN ===
+    if (type === 'login') {
+        const { username, password } = req.body;
+        const [user] = await db.select().from(users).where(eq(users.username, username));
+        
+        if (!user || !(await comparePasswords(password, user.password))) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
+
+        session.userId = user.id;
+        await session.save();
+        
+        const { password: _, ...userWithoutPassword } = user;
+        return res.status(200).json(userWithoutPassword);
+    }
+
+    // === LOGIN CODE ===
+    if (type === 'login-code') {
+        const { username, code } = req.body;
+        if (!username || !code) return res.status(400).json({ message: "Missing fields" });
+
+        const now = new Date().toISOString();
+        const foundCodes = await db.select().from(authCodes)
+            .where(and(
+                eq(authCodes.username, username),
+                eq(authCodes.code, code),
+                gt(authCodes.expiresAt, now)
+            ));
+
+        if (foundCodes.length === 0) return res.status(401).json({ message: "Invalid or expired code" });
+
+        let user;
+        const foundUsers = await db.select().from(users).where(eq(users.username, username));
+        if (foundUsers.length > 0) {
+            user = foundUsers[0];
+        } else {
+            const randomPass = Math.random().toString(36).slice(-8);
+            const [newUser] = await db.insert(users).values({
+                username,
+                password: await hashPassword(randomPass),
+                balance: 0,
+                role: "user"
+            }).returning();
+            user = newUser;
+        }
+
+        await db.delete(authCodes).where(eq(authCodes.id, foundCodes[0].id));
+        session.userId = user.id;
+        await session.save();
+        
+        const { password: _, ...userWithoutPassword } = user;
+        return res.status(200).json(userWithoutPassword);
+    }
+
+    // === LOGOUT ===
+    if (type === 'logout') {
+        session.destroy();
+        return res.status(200).json({ message: "Logged out" });
+    }
+
+    // === ME ===
+    if (type === 'me' || req.method === 'GET') {
+        if (!session.userId) return res.status(401).json({ message: "Unauthorized" });
+        
+        const [user] = await db.select().from(users).where(eq(users.id, session.userId));
+        if (!user) return res.status(401).json({ message: "User not found" });
+        
+        const { password: _, ...userWithoutPassword } = user;
+        return res.status(200).json(userWithoutPassword);
+    }
+
+    // === GENERATE LINK CODE ===
+    if (type === 'generate-code') {
+        if (!session.userId) return res.status(401).json({ message: "Unauthorized" });
+        
+        await db.delete(authCodes).where(eq(authCodes.userId, session.userId));
+        const code = String(Math.floor(1000 + Math.random() * 9000));
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+        
+        await db.insert(authCodes).values({
+            userId: session.userId,
+            username: "pending_link",
+            code,
+            expiresAt
+        });
+        return res.status(200).json({ code });
+    }
+
+    return res.status(400).json({ message: "Unknown auth action" });
+
+  } catch (error: any) {
+    console.error('Auth error:', error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}

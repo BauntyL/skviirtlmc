@@ -3,23 +3,39 @@
   "rewrites": [
     {
       "source": "/api/auth/register",
-      "destination": "/api/auth/register.ts"
+      "destination": "/api/auth/handler?type=register"
     },
     {
       "source": "/api/auth/login",
-      "destination": "/api/auth/login.ts"
+      "destination": "/api/auth/handler?type=login"
+    },
+    {
+      "source": "/api/auth/login-code",
+      "destination": "/api/auth/handler?type=login-code"
     },
     {
       "source": "/api/auth/me",
-      "destination": "/api/auth/me.ts"
+      "destination": "/api/auth/handler?type=me"
     },
     {
       "source": "/api/auth/logout",
-      "destination": "/api/auth/logout.ts"
+      "destination": "/api/auth/handler?type=logout"
+    },
+    {
+      "source": "/api/auth/code/generate",
+      "destination": "/api/auth/handler?type=generate-code"
     },
     {
       "source": "/api/plugin/sync",
-      "destination": "/api/plugin/sync.ts"
+      "destination": "/api/plugin/handler?action=sync"
+    },
+    {
+      "source": "/api/plugin/auth-code",
+      "destination": "/api/plugin/handler?action=auth-code"
+    },
+    {
+      "source": "/api/plugin/verify-code",
+      "destination": "/api/plugin/handler?action=verify-code"
     },
     {
       "source": "/api/stats",
