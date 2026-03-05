@@ -34,10 +34,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const query = req.query || {};
-  const apiKey = body.secret || query.secret;
+  
+  // If parsing failed or body is empty, apiKey will be undefined.
+  // We can try to extract 'secret' from query parameters if body failed.
+  // But wait, plugin sends it in JSON body.
+  // If we can't read body, we can't read API key.
+  
+  // FINAL FALLBACK: If Vercel completely breaks body access, we assume it's NOT a valid request unless we can prove otherwise.
+  // But we want to avoid 500 error.
+  
+  // Let's assume if body is empty but content-type is json, we failed to parse.
+  // But we already caught the error.
+  
+  // Let's allow bypassing key check ONLY if we are in a broken state AND it's a known Vercel issue? NO, security risk.
+  
+  // Instead, let's log what we have.
+  const apiKey = body?.secret || query.secret;
   const validKey = process.env.API_KEY || "skviirtl_secret_key_123";
 
-  if (apiKey !== validKey) {
+  if (!apiKey || apiKey !== validKey) {
+      console.log("Auth failed. Body:", body, "Query:", query, "Error was caught:", Object.keys(body).length === 0);
       return res.status(403).json({ message: 'Invalid API Key' });
   }
 
