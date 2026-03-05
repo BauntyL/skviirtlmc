@@ -105,20 +105,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                                     (p.rank && ['leader', 'admin', 'moderator'].includes(p.rank.toLowerCase())) ? p.name : "Unknown",
                             membersCount: 1,
                             rank: 0,
-                            balance: "0",
+                            balance: p.clanBalance ? p.clanBalance.toString() : "0",
                             kdr: "0.0"
                         });
                     } catch (err) {
                         console.error(`Failed to auto-create clan ${clanName}:`, err);
                     }
                 } else {
-                    // Clan exists, maybe update leader if this player is leader
-                    // Check p.rank (Vault) OR p.clanRank (Clan plugin)
+                    // Clan exists, maybe update leader or balance
+                    const updateData: any = {};
+                    
+                    // Check Leader
                     const isLeader = (p.rank && ['leader', 'admin', 'владелец', 'owner'].includes(p.rank.toLowerCase())) ||
                                      (p.clanRank && ['leader', 'лидер', 'owner', 'владелец'].includes(p.clanRank.toLowerCase()));
-                                     
                     if (isLeader) {
-                        await db.update(clans).set({ leader: p.name }).where(eq(clans.name, clanName));
+                        updateData.leader = p.name;
+                    }
+                    
+                    // Check Balance
+                    if (p.clanBalance) {
+                        updateData.balance = p.clanBalance.toString();
+                    }
+                    
+                    if (Object.keys(updateData).length > 0) {
+                        await db.update(clans).set(updateData).where(eq(clans.name, clanName));
                     }
                 }
             }
