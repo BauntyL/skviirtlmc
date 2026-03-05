@@ -184,67 +184,87 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         console.log(`Processing ${clansList.length} clans`);
         // For simplicity, we can upsert clans. 
         // Note: Ideally we should handle deletions too (clans that no longer exist), but for a top list sync, upsert is okay.
+        
         for (const c of clansList) {
-            if (!c.name) continue;
+            const clanName = c.name ? c.name.replace(/[\[\]]/g, "") : "";
+            if (!clanName) continue;
 
-            const foundClans = await db.select().from(clans).where(eq(clans.name, c.name));
+            const existing = await db.select().from(clans).where(eq(clans.name, clanName));
             
-            if (foundClans.length === 0) {
+            // Format KDR to string with max 2 decimals if it's a number
+            let kdrStr = "0.0";
+            if (c.kdr !== undefined) {
+                kdrStr = typeof c.kdr === 'number' ? c.kdr.toFixed(2) : c.kdr.toString();
+            }
+
+            if (existing.length === 0) {
                 await db.insert(clans).values({
-                    name: c.name,
-                    leader: c.leader,
-                    balance: c.balance?.toString(),
-                    kdr: c.kdr?.toString(),
-                    rank: c.rank,
-                    membersCount: 0 // Placeholder
+                    name: clanName,
+                    leader: c.leader || "Unknown",
+                    membersCount: c.membersCount || 1, // Use sent count or default
+                    rank: c.rank || 0,
+                    balance: c.balance ? c.balance.toString() : "0",
+                    kdr: kdrStr
                 });
             } else {
                 await db.update(clans).set({
-                    leader: c.leader,
-                    balance: c.balance?.toString(),
-                    kdr: c.kdr?.toString(),
-                    rank: c.rank
-                }).where(eq(clans.name, c.name));
+                    leader: c.leader || existing[0].leader,
+                    membersCount: c.membersCount || existing[0].membersCount, // Update if provided
+                    rank: c.rank || existing[0].rank,
+                    balance: c.balance ? c.balance.toString() : existing[0].balance,
+                    kdr: kdrStr
+                }).where(eq(clans.name, clanName));
             }
         }
     }
-  
-    // Update Clan Member Counts and KDR
-    // This is expensive if we do it every time, but for now it's fine.
-    // We group users by clan and update the count and KDR.
-    try {
-        const clanStats = await db.select({
-            clanName: users.clan,
-            count: sql<number>`count(*)`.mapWith(Number),
-            totalKills: sql<number>`sum(${users.kills})`.mapWith(Number),
-            totalDeaths: sql<number>`sum(${users.deaths})`.mapWith(Number)
-        })
-        .from(users)
-        .where(sql`${users.clan} IS NOT NULL`)
-        .groupBy(users.clan);
 
-        for (const stat of clanStats) {
-            if (stat.clanName) {
-                // Calculate KDR
-                let kdr = 0;
-                const kills = stat.totalKills || 0;
-                const deaths = stat.totalDeaths || 0;
-                if (deaths > 0) {
-                    kdr = kills / deaths;
-                } else {
-                    kdr = kills; // If 0 deaths, KDR = kills
+    // Update Clan Member Counts and KDR (ONLY if not provided by plugin)
+    // If plugin sends full list with membersCount, we might skip this or use it as fallback.
+    // Let's keep it as a fallback or for consistency if plugin doesn't send membersCount.
+    // But since we updated Java to send membersCount, we can rely on that primarily.
+    // However, the Java plugin sends "membersCount" only in the new file parsing mode.
+    // If that fails, we fallback to PAPI which doesn't send count.
+    // So let's run this calculation only for clans that haven't been updated recently? 
+    // Or just run it anyway, it won't hurt to have DB consistency check.
+    
+    // Actually, if we trust the plugin's membersCount (from YML), we should prefer it because
+    // the DB might not have all users synced yet.
+    // So let's SKIP this calculation if we received a clansList with data.
+    if (!Array.isArray(clansList) || clansList.length === 0) {
+        try {
+            const clanStats = await db.select({
+                clanName: users.clan,
+                count: sql`count(*)`,
+                totalKills: sql`sum(${users.kills})`,
+                totalDeaths: sql`sum(${users.deaths})`
+            })
+            .from(users)
+            .where(sql`${users.clan} IS NOT NULL`)
+            .groupBy(users.clan);
+    
+            for (const stat of clanStats) {
+                if (stat.clanName) {
+                    // Calculate KDR
+                    let kdr = 0;
+                    const kills = Number(stat.totalKills) || 0;
+                    const deaths = Number(stat.totalDeaths) || 0;
+                    if (deaths > 0) {
+                        kdr = kills / deaths;
+                    } else {
+                        kdr = kills; // If 0 deaths, KDR = kills
+                    }
+    
+                    await db.update(clans)
+                        .set({ 
+                            membersCount: Number(stat.count),
+                            kdr: kdr.toFixed(2)
+                        })
+                        .where(eq(clans.name, stat.clanName));
                 }
-
-                await db.update(clans)
-                    .set({ 
-                        membersCount: stat.count,
-                        kdr: kdr.toFixed(2)
-                    })
-                    .where(eq(clans.name, stat.clanName));
             }
+        } catch (e) {
+            console.error("Failed to update clan member counts/KDR:", e);
         }
-    } catch (e) {
-        console.error("Failed to update clan member counts/KDR:", e);
     }
 
     // Return success
