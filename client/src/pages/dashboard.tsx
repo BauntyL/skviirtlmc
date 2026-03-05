@@ -10,14 +10,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
 export default function Dashboard() {
   const [location, setLocation] = useLocation();
-  const { data: user, isLoading } = useAuth();
+  const { data: user, isLoading, refetch } = useAuth();
   const [linkCode, setLinkCode] = useState<string | null>(null);
   const { toast } = useToast();
 
@@ -33,6 +33,14 @@ export default function Dashboard() {
         toast({ title: "Ошибка", description: "Не удалось сгенерировать код", variant: "destructive" });
     }
   });
+
+  useEffect(() => {
+    if (!linkCode || user?.minecraftUuid) return;
+    const intervalId = setInterval(() => {
+      refetch();
+    }, 5000);
+    return () => clearInterval(intervalId);
+  }, [linkCode, user?.minecraftUuid, refetch]);
 
   // Redirect if not logged in
   if (!isLoading && !user) {

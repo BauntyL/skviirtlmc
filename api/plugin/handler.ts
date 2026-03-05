@@ -92,8 +92,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const authCode = foundCodes[0];
         if (!authCode.userId) return res.status(400).json({ message: "Code not linked to user" });
 
+        const existingUser = await db.select().from(users).where(eq(users.username, username));
+        const canUpdateUsername = existingUser.length === 0 || existingUser[0].id === authCode.userId;
+
+        const updateData: Partial<typeof users.$inferInsert> = {
+            minecraftUuid: uuid || null,
+        };
+
+        if (canUpdateUsername) {
+            updateData.username = username;
+        }
+
         await db.update(users)
-            .set({ username, minecraftUuid: uuid || null })
+            .set(updateData)
             .where(eq(users.id, authCode.userId));
         
         await db.delete(authCodes).where(eq(authCodes.id, authCode.id));
