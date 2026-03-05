@@ -12,16 +12,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let body: any = {};
   
   // Vercel serverless functions body parsing fix
+  // req.body getter can throw "TypeError: invalid parameter format" if body is malformed/empty
+  // We MUST check req.body availability SAFELY.
+  
+  // Attempt to parse manually if possible, or just ignore body if it throws.
   try {
-      if (req.body) {
-         if (typeof req.body === 'object') {
-             body = req.body;
-         } else if (typeof req.body === 'string') {
-             body = JSON.parse(req.body);
+      // Accessing req.body might throw immediately!
+      // We can't check 'if (req.body)' safely if the getter throws.
+      // So we wrap the WHOLE access block.
+      const raw = req.body;
+      if (raw) {
+         if (typeof raw === 'object') {
+             body = raw;
+         } else if (typeof raw === 'string') {
+             body = JSON.parse(raw);
          }
       }
   } catch (e) {
-      console.error("Failed to parse body:", e);
+      console.error("Failed to parse body (ignored):", e);
+      // It's okay, body remains {}
   }
 
   const query = req.query || {};

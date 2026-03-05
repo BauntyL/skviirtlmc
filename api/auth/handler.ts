@@ -47,25 +47,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   
   // Vercel serverless functions body parsing fix
   try {
-      // Safely check if body exists without triggering the getter if it's malformed
-      // In Vercel Node runtime, req.body might be a getter that throws.
-      // We use a safe access pattern or just assume it might throw.
-      // But we already have the try-catch block.
-      // The issue is `const rawBody = req.body` IS the line that throws.
-      // So we need to be very careful.
-      // Let's try to access it directly inside the try.
-      
-      if (req.body) {
-         // If req.body is accessible
-         if (typeof req.body === 'object') {
-             body = req.body;
-         } else if (typeof req.body === 'string') {
-             body = JSON.parse(req.body);
+      // Accessing req.body might throw immediately!
+      const raw = req.body;
+      if (raw) {
+         if (typeof raw === 'object') {
+             body = raw;
+         } else if (typeof raw === 'string') {
+             body = JSON.parse(raw);
          }
       }
   } catch (e) {
-      console.error("Failed to parse body:", e);
-      // Fallback: maybe it's in a different property or we just ignore it
+      console.error("Failed to parse body (ignored):", e);
+      // It's okay, body remains {}
   }
 
   const type = req.query.type || body.type;
