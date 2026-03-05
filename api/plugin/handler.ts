@@ -9,7 +9,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Basic API Key check
-  const body = req.body || {};
+  let body: any = {};
+  try {
+    body = req.body || {};
+  } catch (e) {
+    console.error("Error accessing req.body:", e);
+  }
+  
   const query = req.query || {};
   const apiKey = body.secret || query.secret;
   const validKey = process.env.API_KEY || "skviirtl_secret_key_123";
