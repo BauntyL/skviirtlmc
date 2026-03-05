@@ -124,7 +124,6 @@ export default function Dashboard() {
                     <Button 
                         variant="outline" 
                         className="w-full border-blue-500/30 text-blue-400 hover:bg-blue-500/10"
-                        onClick={() => generateCodeMutation.mutate()}
                     >
                         {user.minecraftUuid ? "Перепривязать аккаунт" : "Привязать аккаунт"}
                     </Button>
@@ -165,8 +164,16 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-red-400 text-center">
-                                {generateCodeMutation.isError ? "Ошибка генерации кода." : "Нажмите кнопку, чтобы получить код."}
+                            <div className="flex flex-col items-center gap-4">
+                                <Button 
+                                    className="bg-primary text-black hover:bg-primary/90 w-full"
+                                    onClick={() => generateCodeMutation.mutate()}
+                                >
+                                    Сгенерировать код
+                                </Button>
+                                {generateCodeMutation.isError && (
+                                    <div className="text-red-400 text-center text-sm">Ошибка генерации кода. Попробуйте еще раз.</div>
+                                )}
                             </div>
                         )}
                     </div>

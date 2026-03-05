@@ -9,20 +9,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Basic API Key check
-  const apiKey = req.body?.secret || req.query?.secret;
+  const body = req.body || {};
+  const query = req.query || {};
+  const apiKey = body.secret || query.secret;
   const validKey = process.env.API_KEY || "skviirtl_secret_key_123";
 
   if (apiKey !== validKey) {
       return res.status(403).json({ message: 'Invalid API Key' });
   }
 
-  const action = req.query.action || req.body.action;
+  const action = query.action || body.action;
 
   try {
     // === AUTH CODE (Save code from plugin) ===
     if (action === 'auth-code') {
-        const username = req.body?.username;
-        const code = req.body?.code;
+        const username = body.username;
+        const code = body.code;
         if (!username || !code) return res.status(400).json({ message: 'Missing fields' });
 
         await db.delete(authCodes).where(eq(authCodes.username, username));
@@ -33,9 +35,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // === VERIFY CODE (Link account) ===
     if (action === 'verify-code') {
-        const username = req.body?.username;
-        const code = req.body?.code;
-        const uuid = req.body?.uuid;
+        const username = body.username;
+        const code = body.code;
+        const uuid = body.uuid;
         if (!username || !code) return res.status(400).json({ message: 'Missing fields' });
 
         const now = new Date().toISOString();
@@ -62,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // To avoid code duplication, I will just reference the logic I wrote before.
         // But for this file to be complete, I must include it.
         
-        const { onlineCount, maxPlayers, tps, players, clans: clansList } = req.body;
+        const { onlineCount, maxPlayers, tps, players, clans: clansList } = body;
 
         // Update Server Stats
         if (onlineCount !== undefined) {
