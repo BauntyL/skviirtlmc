@@ -20,8 +20,8 @@ export default function Home() {
     { icon: Gem, title: "Награды", description: "Получайте ежедневные и еженедельные награды командой /rewards." },
     { icon: ShoppingCart, title: "Аукцион", description: "Торгуйте безопасно с игроками через глобальный рынок /ah." },
     { icon: Users, title: "Кланы", description: "Создавайте альянсы, повышайте уровень и доминируйте в топе." },
-    { icon: Pickaxe, title: "Работы и Скупщик", description: "Зарабатывайте, продавая ресурсы (/seller) или выполняя работы." },
-    { icon: Shield, title: "Приваты", description: "Защитите свои постройки легко с помощью системы /rent." },
+    { icon: Pickaxe, title: "Скупщик", description: "Зарабатывайте, продавая ресурсы (/seller) по выгодным ценам." },
+    { icon: Shield, title: "Аренда", description: "Арендуйте уникальные предметы и инструменты с помощью системы /rent." },
     { icon: Users, title: "Скины", description: "Установите свой HD скин командой /skin [url] в любое время." },
   ];
 

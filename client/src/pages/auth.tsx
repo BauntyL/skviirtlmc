@@ -133,7 +133,7 @@ export default function AuthPage() {
         
         {activeTab === 'register' && (
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Примечание: Вы также можете зарегистрироваться в игре, используя команду <code className="text-primary bg-primary/10 px-1 rounded">/register пароль пароль</code>
+            Примечание: Вы также можете зарегистрироваться в игре, используя команду <code className="text-primary bg-primary/10 px-1 rounded">/register пароль</code>
           </p>
         )}
       </div>

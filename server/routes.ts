@@ -1,14 +1,24 @@
 import type { Express } from "express";
 import type { Server } from "http";
-import { storage, setupAuth } from "./storage";
+import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
+import session from "express-session";
 
 export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  setupAuth(app);
+  // Setup Auth (moved from storage.ts to avoid circular dependency/import issues with MemStorage)
+  app.use(
+    session({
+      store: storage.sessionStore,
+      secret: process.env.SESSION_SECRET || "skviirtl_secret",
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false }, // Set to true in production with HTTPS
+    })
+  );
 
   app.get(api.auth.me.path, async (req, res) => {
     if (!req.session?.userId) {
