@@ -27,6 +27,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          } else if (typeof raw === 'string') {
              body = JSON.parse(raw);
          }
+      } else {
+          // If req.body is empty, maybe it's available via event listener (for raw stream)
+          // But in Vercel serverless function, we should consume it if not parsed.
+          // However, 'invalid parameter format' suggests Vercel TRIED to parse and failed.
+          // This happens if Content-Type is application/json but body is empty or malformed.
       }
   } catch (e) {
       console.error("Failed to parse body (ignored):", e);
@@ -35,25 +40,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const query = req.query || {};
   
-  // If parsing failed or body is empty, apiKey will be undefined.
-  // We can try to extract 'secret' from query parameters if body failed.
-  // But wait, plugin sends it in JSON body.
-  // If we can't read body, we can't read API key.
+  // WORKAROUND FOR VERCEL BODY PARSING ISSUE
+  // If we caught an error, body is empty.
+  // If request has query parameters, we might use them.
+  // But for plugin POST requests, data is in body.
   
-  // FINAL FALLBACK: If Vercel completely breaks body access, we assume it's NOT a valid request unless we can prove otherwise.
-  // But we want to avoid 500 error.
+  // If body is empty and we are sure it's from our plugin (which we can't be without key),
+  // we might be stuck.
   
-  // Let's assume if body is empty but content-type is json, we failed to parse.
-  // But we already caught the error.
+  // Let's try to trust query params for 'secret' as a fallback if body failed?
+  // The plugin currently sends secret in JSON.
+  // I will update plugin to ALSO send secret in query param as a backup.
   
-  // Let's allow bypassing key check ONLY if we are in a broken state AND it's a known Vercel issue? NO, security risk.
-  
-  // Instead, let's log what we have.
   const apiKey = body?.secret || query.secret;
   const validKey = process.env.API_KEY || "skviirtl_secret_key_123";
 
   if (!apiKey || apiKey !== validKey) {
       console.log("Auth failed. Body:", body, "Query:", query, "Error was caught:", Object.keys(body).length === 0);
+      // Don't fail with 403 immediately if we suspect body parsing issue? 
+      // No, security first.
       return res.status(403).json({ message: 'Invalid API Key' });
   }
 
