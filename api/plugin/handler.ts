@@ -21,7 +21,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     // === AUTH CODE (Save code from plugin) ===
     if (action === 'auth-code') {
-        const { username, code } = req.body;
+        const username = req.body?.username;
+        const code = req.body?.code;
         if (!username || !code) return res.status(400).json({ message: 'Missing fields' });
 
         await db.delete(authCodes).where(eq(authCodes.username, username));
@@ -32,7 +33,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // === VERIFY CODE (Link account) ===
     if (action === 'verify-code') {
-        const { username, code, uuid } = req.body;
+        const username = req.body?.username;
+        const code = req.body?.code;
+        const uuid = req.body?.uuid;
         if (!username || !code) return res.status(400).json({ message: 'Missing fields' });
 
         const now = new Date().toISOString();

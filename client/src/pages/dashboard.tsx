@@ -165,7 +165,9 @@ export default function Dashboard() {
                                 </div>
                             </div>
                         ) : (
-                            <div className="text-red-400 text-center">Не удалось получить код. Попробуйте еще раз.</div>
+                            <div className="text-red-400 text-center">
+                                {generateCodeMutation.isError ? "Ошибка генерации кода." : "Нажмите кнопку, чтобы получить код."}
+                            </div>
                         )}
                     </div>
                 </DialogContent>
