@@ -18,6 +18,10 @@
       "destination": "/api/auth/logout.ts"
     },
     {
+      "source": "/api/plugin/sync",
+      "destination": "/api/plugin/sync.ts"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
