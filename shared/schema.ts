@@ -10,6 +10,8 @@ export const users = pgTable("users", {
   realBalance: integer("real_balance").default(0).notNull(),
   clan: text("clan"), // Clan name string from plugin
   rank: text("rank"),
+  kills: integer("kills").default(0),
+  deaths: integer("deaths").default(0),
 });
 
 export const clans = pgTable("clans", {

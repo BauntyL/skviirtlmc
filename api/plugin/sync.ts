@@ -2,7 +2,7 @@
 import { db } from "../lib/db.js";
 // @ts-ignore
 import { users, clans, serverStats } from "../../shared/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -75,7 +75,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   
     // Update players data (balance, clan, etc.)
     if (Array.isArray(players)) {
-      console.log(`Processing ${players.length} players`);
+      // Log first player structure for debugging
+      if (players.length > 0) {
+        console.log("Sample player data:", JSON.stringify(players[0]));
+      }
       
       for (const p of players) {
         // 1. Process Clan (independent of user registration)
@@ -90,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     try {
                         await db.insert(clans).values({
                             name: clanName,
-                            leader: p.rank === "leader" || p.rank === "Leader" ? p.name : "Unknown",
+                            leader: (p.rank && ['leader', 'admin', 'moderator'].includes(p.rank.toLowerCase())) ? p.name : "Unknown",
                             membersCount: 1,
                             rank: 0,
                             balance: "0",
@@ -98,6 +101,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                         });
                     } catch (err) {
                         console.error(`Failed to auto-create clan ${clanName}:`, err);
+                    }
+                } else {
+                    // Clan exists, maybe update leader if this player is leader
+                    if (p.rank && ['leader', 'admin'].includes(p.rank.toLowerCase())) {
+                        await db.update(clans).set({ leader: p.name }).where(eq(clans.name, clanName));
                     }
                 }
             }
@@ -113,20 +121,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (user) {
           // Update user stats
           let balance = 0;
+          let realBalance = 0;
+          let kills = 0;
+          let deaths = 0;
+
           try {
              if (p.balance) {
-                // Remove currency symbols and parse
                 balance = parseFloat(p.balance.toString().replace(/[^0-9.-]+/g,""));
+             }
+             if (p.realBalance) {
+                realBalance = parseFloat(p.realBalance.toString().replace(/[^0-9.-]+/g,""));
+             }
+             if (p.kills) {
+                kills = parseInt(p.kills.toString().replace(/[^0-9]+/g,""));
+             }
+             if (p.deaths) {
+                deaths = parseInt(p.deaths.toString().replace(/[^0-9]+/g,""));
              }
           } catch (e) {}
 
-          console.log(`Updating user ${user.username} (ID: ${user.id}) - Balance: ${balance}, Clan: ${p.clan}`);
+          console.log(`Updating user ${user.username} (ID: ${user.id}) - Bal: ${balance}, RealBal: ${realBalance}, Clan: ${p.clan}`);
           
           await db.update(users)
             .set({ 
-               balance: isNaN(balance) ? 0 : Math.round(balance), // Store as integer (cents) or simple int if currency is simple
-               clan: p.clan ? p.clan.replace(/[\[\]]/g, "") : null, // Store clean name
-               rank: p.rank
+               balance: isNaN(balance) ? 0 : Math.round(balance),
+               realBalance: isNaN(realBalance) ? 0 : Math.round(realBalance),
+               clan: p.clan ? p.clan.replace(/[\[\]]/g, "") : null,
+               rank: p.rank,
+               kills: isNaN(kills) ? 0 : kills,
+               deaths: isNaN(deaths) ? 0 : deaths
             })
             .where(eq(users.id, user.id));
         }
@@ -163,6 +186,44 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
     }
   
+    // Update Clan Member Counts and KDR
+    // This is expensive if we do it every time, but for now it's fine.
+    // We group users by clan and update the count and KDR.
+    try {
+        const clanStats = await db.select({
+            clanName: users.clan,
+            count: sql<number>`count(*)`.mapWith(Number),
+            totalKills: sql<number>`sum(${users.kills})`.mapWith(Number),
+            totalDeaths: sql<number>`sum(${users.deaths})`.mapWith(Number)
+        })
+        .from(users)
+        .where(sql`${users.clan} IS NOT NULL`)
+        .groupBy(users.clan);
+
+        for (const stat of clanStats) {
+            if (stat.clanName) {
+                // Calculate KDR
+                let kdr = 0;
+                const kills = stat.totalKills || 0;
+                const deaths = stat.totalDeaths || 0;
+                if (deaths > 0) {
+                    kdr = kills / deaths;
+                } else {
+                    kdr = kills; // If 0 deaths, KDR = kills
+                }
+
+                await db.update(clans)
+                    .set({ 
+                        membersCount: stat.count,
+                        kdr: kdr.toFixed(2)
+                    })
+                    .where(eq(clans.name, stat.clanName));
+            }
+        }
+    } catch (e) {
+        console.error("Failed to update clan member counts/KDR:", e);
+    }
+
     // Return success
     return res.status(200).json({ status: "synced" });
   } catch (error: any) {
