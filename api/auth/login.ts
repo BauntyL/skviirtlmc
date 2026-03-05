@@ -4,6 +4,8 @@ import { db } from "../lib/db.js";
 import { users } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getIronSession } from "iron-session";
+import { sessionOptions } from "../lib/session.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS Headers
@@ -23,6 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
+
+  const session = await getIronSession(req, res, sessionOptions);
 
   try {
     const { username, password } = req.body;
@@ -45,6 +49,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(401).json({ message: "Invalid username or password" });
       }
 
+      // Save session
+      session.userId = user.id;
+      await session.save();
+
       // Success
       const { password: _, ...userWithoutPassword } = user;
       
@@ -54,6 +62,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
        // Fallback for demo
        if (process.env.NODE_ENV === 'production') {
          console.warn('Falling back to mock login due to DB error');
+         // Mock session
+         session.userId = 999;
+         await session.save();
+
          // Mock success for any login if DB is down
          return res.status(200).json({ id: 999, username, isAdmin: false });
        }

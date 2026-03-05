@@ -10,6 +10,14 @@
       "destination": "/api/auth/login.ts"
     },
     {
+      "source": "/api/auth/me",
+      "destination": "/api/auth/me.ts"
+    },
+    {
+      "source": "/api/auth/logout",
+      "destination": "/api/auth/logout.ts"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

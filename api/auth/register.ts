@@ -4,6 +4,8 @@ import { db } from "../lib/db.js";
 import { users, type InsertUser } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getIronSession } from "iron-session";
+import { sessionOptions } from "../lib/session.js";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   // CORS Headers
@@ -23,6 +25,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Method Not Allowed' });
   }
+  
+  const session = await getIronSession(req, res, sessionOptions);
 
   try {
     const { username, password } = req.body;
@@ -43,6 +47,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const newUser: InsertUser = { username, password };
       const [createdUser] = await db.insert(users).values(newUser).returning();
       
+      // Save session
+      session.userId = createdUser.id;
+      await session.save();
+
       // Return user without password
       const { password: _, ...userWithoutPassword } = createdUser;
       
@@ -57,6 +65,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
          // In production, we might want to fail hard, OR fallback if acceptable.
          // Let's fallback for now to unblock the user.
          console.warn('Falling back to mock registration due to DB error');
+         
+         // Mock session
+         session.userId = 999;
+         await session.save();
+         
          return res.status(201).json({ id: 999, username, isAdmin: false });
       }
       
