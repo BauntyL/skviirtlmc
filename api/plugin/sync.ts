@@ -93,7 +93,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     try {
                         await db.insert(clans).values({
                             name: clanName,
-                            leader: (p.rank && ['leader', 'admin', 'moderator'].includes(p.rank.toLowerCase())) ? p.name : "Unknown",
+                            leader: (p.clanRank && ['leader', 'лидер', 'owner', 'владелец'].includes(p.clanRank.toLowerCase())) ? p.name : 
+                                    (p.rank && ['leader', 'admin', 'moderator'].includes(p.rank.toLowerCase())) ? p.name : "Unknown",
                             membersCount: 1,
                             rank: 0,
                             balance: "0",
@@ -104,7 +105,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     }
                 } else {
                     // Clan exists, maybe update leader if this player is leader
-                    if (p.rank && ['leader', 'admin'].includes(p.rank.toLowerCase())) {
+                    // Check p.rank (Vault) OR p.clanRank (Clan plugin)
+                    const isLeader = (p.rank && ['leader', 'admin', 'владелец', 'owner'].includes(p.rank.toLowerCase())) ||
+                                     (p.clanRank && ['leader', 'лидер', 'owner', 'владелец'].includes(p.clanRank.toLowerCase()));
+                                     
+                    if (isLeader) {
                         await db.update(clans).set({ leader: p.name }).where(eq(clans.name, clanName));
                     }
                 }
