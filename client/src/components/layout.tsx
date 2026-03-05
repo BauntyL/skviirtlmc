@@ -11,10 +11,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/start", label: "How to Connect" },
-    { href: "/clans", label: "Clans" },
-    { href: "/store", label: "Store" },
+    { href: "/", label: "Главная" },
+    { href: "/start", label: "Как начать" },
+    { href: "/clans", label: "Кланы" },
+    // { href: "/store", label: "Магазин" }, // Hidden for now
   ];
 
   return (
@@ -69,7 +69,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               ) : (
                 <Link href="/auth">
                   <Button className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/40 hover:-translate-y-0.5">
-                    Login / Play
+                    Вход / Играть
                   </Button>
                 </Link>
               )}
@@ -123,7 +123,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 ) : (
                   <Link href="/auth" onClick={() => setMobileMenuOpen(false)}>
                     <Button className="w-full bg-primary text-primary-foreground">
-                      Login / Register
+                      Вход / Регистрация
                     </Button>
                   </Link>
                 )}
@@ -155,7 +155,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               rel="noreferrer"
               className="text-muted-foreground hover:text-primary transition-colors text-sm font-medium flex items-center gap-2"
             >
-              Join our Telegram
+              Вступайте в наш Telegram
             </a>
           </div>
         </div>

@@ -11,14 +11,14 @@ export default function Clans() {
         <div>
           <h1 className="text-4xl md:text-5xl font-display font-bold text-white mb-4 flex items-center gap-4">
             <Trophy className="w-10 h-10 text-primary" />
-            Clan Leaderboard
+            Топ Кланов
           </h1>
-          <p className="text-xl text-muted-foreground">Top factions fighting for server dominance.</p>
+          <p className="text-xl text-muted-foreground">Лучшие фракции, сражающиеся за доминирование на сервере.</p>
         </div>
         
         <div className="glass-card px-6 py-4 rounded-xl flex items-center gap-6">
           <div className="flex flex-col">
-            <span className="text-sm text-muted-foreground">Total Clans</span>
+            <span className="text-sm text-muted-foreground">Всего Кланов</span>
             <span className="text-2xl font-bold text-white">
               {isLoading ? "..." : clans?.length || 0}
             </span>
@@ -34,13 +34,13 @@ export default function Clans() {
         </div>
       ) : error ? (
         <div className="text-center p-12 glass-card rounded-2xl">
-          <p className="text-destructive font-medium">Failed to load leaderboard. Please try again later.</p>
+          <p className="text-destructive font-medium">Не удалось загрузить таблицу лидеров. Пожалуйста, попробуйте позже.</p>
         </div>
       ) : clans?.length === 0 ? (
         <div className="text-center p-12 glass-card rounded-2xl">
           <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-xl font-bold text-white mb-2">No Clans Yet</h3>
-          <p className="text-muted-foreground">Be the first to create a clan in-game!</p>
+          <h3 className="text-xl font-bold text-white mb-2">Кланов пока нет</h3>
+          <p className="text-muted-foreground">Будьте первым, кто создаст клан в игре!</p>
         </div>
       ) : (
         <div className="glass-card rounded-2xl overflow-hidden">
@@ -48,12 +48,12 @@ export default function Clans() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-zinc-900/80 border-b border-white/10">
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Rank</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Clan Name</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Leader</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Co-Leaders</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Level</th>
-                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Members</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Ранг</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Название Клана</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Лидер</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase">Замы</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Уровень</th>
+                  <th className="px-6 py-4 text-sm font-semibold tracking-wider text-muted-foreground uppercase text-center">Участники</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -75,7 +75,7 @@ export default function Clans() {
                       <span className="text-primary font-medium">{clan.leader}</span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-muted-foreground">
-                      {clan.coLeaders || "None"}
+                      {clan.coLeaders || "Нет"}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="inline-flex items-center justify-center px-3 py-1 rounded-full bg-zinc-800 border border-zinc-700 text-white font-mono text-sm">

@@ -14,14 +14,12 @@ import { api } from "@shared/routes";
 type FormData = z.infer<typeof api.auth.login.input>;
 
 export default function AuthPage() {
-  const [, setLocation] = useLocation();
   const { data: user, isLoading: authLoading } = useAuth();
-  
+  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
   const login = useLogin();
   const register = useRegister();
-  const [activeTab, setActiveTab] = useState<"login" | "register">("login");
+  const [, setLocation] = useLocation();
 
-  // Redirect if already logged in
   if (user) {
     setLocation("/dashboard");
     return null;
@@ -38,11 +36,11 @@ export default function AuthPage() {
   const onSubmit = (data: FormData) => {
     if (activeTab === "login") {
       login.mutate(data, {
-        onSuccess: () => setLocation("/dashboard")
+        onSuccess: () => setLocation("/dashboard"),
       });
     } else {
       register.mutate(data, {
-        onSuccess: () => setLocation("/dashboard")
+        onSuccess: () => setLocation("/dashboard"),
       });
     }
   };
@@ -64,15 +62,15 @@ export default function AuthPage() {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 mb-4">
             <Gamepad2 className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-3xl font-display font-bold text-white mb-2">Player Portal</h1>
-          <p className="text-muted-foreground">Sign in to manage your account and stats</p>
+          <h1 className="text-3xl font-display font-bold text-white mb-2">Портал Игрока</h1>
+          <p className="text-muted-foreground">Войдите, чтобы управлять аккаунтом и статистикой</p>
         </div>
 
         <div className="glass-card rounded-2xl p-2 shadow-2xl shadow-black/50">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
             <TabsList className="grid w-full grid-cols-2 mb-6 bg-zinc-900/50 p-1">
-              <TabsTrigger value="login" className="data-[state=active]:bg-zinc-800">Login</TabsTrigger>
-              <TabsTrigger value="register" className="data-[state=active]:bg-zinc-800">Register</TabsTrigger>
+              <TabsTrigger value="login" className="data-[state=active]:bg-zinc-800">Вход</TabsTrigger>
+              <TabsTrigger value="register" className="data-[state=active]:bg-zinc-800">Регистрация</TabsTrigger>
             </TabsList>
             
             <div className="p-4 sm:p-6 pt-0">
@@ -83,10 +81,10 @@ export default function AuthPage() {
                     name="username"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Username</FormLabel>
+                        <FormLabel className="text-zinc-300">Никнейм</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Your Minecraft Nickname" 
+                            placeholder="Ваш ник в Minecraft" 
                             className="bg-zinc-900/50 border-zinc-800 focus-visible:ring-primary"
                             {...field} 
                           />
@@ -100,7 +98,7 @@ export default function AuthPage() {
                     name="password"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-zinc-300">Password</FormLabel>
+                        <FormLabel className="text-zinc-300">Пароль</FormLabel>
                         <FormControl>
                           <Input 
                             type="password" 
@@ -122,9 +120,9 @@ export default function AuthPage() {
                     {isPending ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
                     ) : activeTab === "login" ? (
-                      "Sign In"
+                      "Войти"
                     ) : (
-                      "Create Account"
+                      "Создать аккаунт"
                     )}
                   </Button>
                 </form>
@@ -135,7 +133,7 @@ export default function AuthPage() {
         
         {activeTab === 'register' && (
           <p className="text-center text-sm text-muted-foreground mt-6">
-            Note: You can also register in-game using <code className="text-primary bg-primary/10 px-1 rounded">/register pass pass</code>
+            Примечание: Вы также можете зарегистрироваться в игре, используя команду <code className="text-primary bg-primary/10 px-1 rounded">/register пароль пароль</code>
           </p>
         )}
       </div>
