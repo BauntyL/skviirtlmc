@@ -43,13 +43,29 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   // Get action type from query or body
-  const type = req.query.type || req.body.type;
+  let body: any = {};
+  
+  // Vercel serverless functions body parsing fix
+  try {
+      if (req.body) {
+          if (typeof req.body === 'object') {
+              body = req.body;
+          } else if (typeof req.body === 'string') {
+              body = JSON.parse(req.body);
+          }
+      }
+  } catch (e) {
+      console.error("Failed to parse body:", e);
+  }
+
+  const type = req.query.type || body.type;
   const session = await getIronSession<SessionData>(req, res, sessionOptions);
 
   try {
     // === REGISTER ===
     if (type === 'register') {
-        const { username, password } = req.body;
+        const username = body.username;
+        const password = body.password;
         if (!username || !password) return res.status(400).json({ message: "Missing fields" });
 
         const existingUser = await db.select().from(users).where(eq(users.username, username));
@@ -60,6 +76,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             username,
             password: hashedPassword,
             balance: 0,
+            realBalance: 0,
+            kills: 0,
+            deaths: 0,
             role: "user"
         }).returning();
 
@@ -72,7 +91,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // === LOGIN ===
     if (type === 'login') {
-        const { username, password } = req.body;
+        const username = body.username;
+        const password = body.password;
+        if (!username || !password) return res.status(400).json({ message: "Missing fields" });
+        
         const [user] = await db.select().from(users).where(eq(users.username, username));
         
         if (!user || !(await comparePasswords(password, user.password))) {
@@ -88,7 +110,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // === LOGIN CODE ===
     if (type === 'login-code') {
-        const { username, code } = req.body;
+        const username = body.username;
+        const code = body.code;
         if (!username || !code) return res.status(400).json({ message: "Missing fields" });
 
         const now = new Date().toISOString();
@@ -141,20 +164,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json(userWithoutPassword);
     }
 
-    // === GENERATE LINK CODE ===
+    // === GENERATE CODE (For linking) ===
     if (type === 'generate-code') {
         if (!session.userId) return res.status(401).json({ message: "Unauthorized" });
-        
-        await db.delete(authCodes).where(eq(authCodes.userId, session.userId));
-        const code = String(Math.floor(1000 + Math.random() * 9000));
+        const [user] = await db.select().from(users).where(eq(users.id, session.userId));
+        if (!user) return res.status(401).json({ message: "User not found" });
+
+        // Generate 4 digit code
+        const code = Math.floor(1000 + Math.random() * 9000).toString();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
         
-        await db.insert(authCodes).values({
-            userId: session.userId,
-            username: "pending_link",
-            code,
-            expiresAt
+        await db.delete(authCodes).where(eq(authCodes.username, user.username));
+        await db.insert(authCodes).values({ 
+            username: user.username, 
+            code, 
+            expiresAt,
+            userId: user.id
         });
+        
         return res.status(200).json({ code });
     }
 

@@ -12,14 +12,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   let body: any = {};
   
   // Vercel serverless functions body parsing fix
-  if (req.body && typeof req.body === 'object') {
-      body = req.body;
-  } else if (req.body && typeof req.body === 'string') {
-      try {
-          body = JSON.parse(req.body);
-      } catch (e) {
-          console.error("Failed to parse body string:", e);
+  try {
+      if (req.body) {
+          if (typeof req.body === 'object') {
+              body = req.body;
+          } else if (typeof req.body === 'string') {
+              body = JSON.parse(req.body);
+          }
       }
+  } catch (e) {
+      console.error("Failed to parse body:", e);
   }
 
   const query = req.query || {};
