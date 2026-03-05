@@ -1,6 +1,7 @@
 // @ts-ignore
 import { db } from "../lib/db.js";
-import { users } from "@shared/schema";
+// @ts-ignore
+import { users } from "../../shared/schema.js";
 import { eq } from "drizzle-orm";
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
