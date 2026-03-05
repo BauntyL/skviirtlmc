@@ -78,7 +78,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.log(`Processing ${players.length} players`);
       
       for (const p of players) {
-        // Find user by username (case-insensitive ideally, but simple for now)
+        // 1. Process Clan (independent of user registration)
+        if (p.clan) {
+            const clanName = p.clan.replace(/[\[\]]/g, ""); // Remove brackets e.g. [Warden] -> Warden
+            if (clanName && clanName.length > 0) {
+                // Check if clan exists
+                const existingClans = await db.select().from(clans).where(eq(clans.name, clanName));
+                
+                if (existingClans.length === 0) {
+                    console.log(`Auto-creating clan from player data: ${clanName}`);
+                    try {
+                        await db.insert(clans).values({
+                            name: clanName,
+                            leader: p.rank === "leader" || p.rank === "Leader" ? p.name : "Unknown",
+                            membersCount: 1,
+                            rank: 0,
+                            balance: "0",
+                            kdr: "0.0"
+                        });
+                    } catch (err) {
+                        console.error(`Failed to auto-create clan ${clanName}:`, err);
+                    }
+                }
+            }
+        }
+
+        // 2. Process User (if registered)
+        // Find user by username (case-insensitive)
+        // Note: In a real app, use ilike or lower(). For now, we assume exact match or handle simple case.
+        // Drizzle doesn't support ilike easily in all drivers without sql operator, so we fetch all matching simple.
         const foundUsers = await db.select().from(users).where(eq(users.username, p.name));
         const user = foundUsers[0];
         
@@ -97,7 +125,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           await db.update(users)
             .set({ 
                balance: isNaN(balance) ? 0 : Math.round(balance), // Store as integer (cents) or simple int if currency is simple
-               clan: p.clan,
+               clan: p.clan ? p.clan.replace(/[\[\]]/g, "") : null, // Store clean name
                rank: p.rank
             })
             .where(eq(users.id, user.id));

@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
-import { Coins, Wallet, Sparkles, User as UserIcon, Activity, Box } from "lucide-react";
+import { Coins, Wallet, Sparkles, User as UserIcon, Activity, Box, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
