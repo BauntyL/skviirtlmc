@@ -81,9 +81,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       
       for (const p of players) {
+        // Debug Bauntyl
+        if (p.name.toLowerCase() === 'bauntyl') {
+            console.log("Processing Bauntyl:", JSON.stringify(p));
+        }
+
         // 1. Process Clan (independent of user registration)
         if (p.clan) {
             const clanName = p.clan.replace(/[\[\]]/g, ""); // Remove brackets e.g. [Warden] -> Warden
+            if (p.name.toLowerCase() === 'bauntyl') {
+                console.log(`Bauntyl Clan Raw: '${p.clan}', Clean: '${clanName}'`);
+            }
             if (clanName && clanName.length > 0) {
                 // Check if clan exists
                 const existingClans = await db.select().from(clans).where(eq(clans.name, clanName));
