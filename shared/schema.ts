@@ -40,6 +40,19 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertClanSchema = createInsertSchema(clans).omit({ id: true });
 export const insertServerStatsSchema = createInsertSchema(serverStats).omit({ id: true });
 
+export const authCodes = pgTable("auth_codes", {
+  id: serial("id").primaryKey(),
+  username: text("username").notNull(),
+  code: text("code").notNull(),
+  expiresAt: text("expires_at").notNull(), // ISO date string
+});
+
+export const insertAuthCodeSchema = createInsertSchema(authCodes).pick({
+  username: true,
+  code: true,
+  expiresAt: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Clan = typeof clans.$inferSelect;
