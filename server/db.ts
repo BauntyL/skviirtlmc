@@ -1,13 +1,13 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import pg from "pg";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "@shared/schema";
 
-const { Pool } = pg;
-
 if (!process.env.DATABASE_URL) {
-  // Use a fallback for local dev if not set
-  process.env.DATABASE_URL = "postgres://postgres:postgres@localhost:5432/skviirtl";
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
 }
 
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle(pool, { schema });
+export const queryClient = postgres(process.env.DATABASE_URL);
+export const db = drizzle(queryClient, { schema });
+export const pool = queryClient; // Re-export as pool for session store (postgres-js works slightly differently but connect-pg-simple handles it or we use pg)

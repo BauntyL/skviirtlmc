@@ -3,18 +3,30 @@ import { users, clans, serverStats, type User, type InsertUser, type Clan, type 
 import { eq } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
-import { pool } from "./db";
+import pg from "pg";
 
 const PostgresStore = connectPg(session);
+
+// Create a pg pool for session store (connect-pg-simple needs 'pg' pool, not 'postgres-js')
+const sessionPool = new pg.Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+});
 
 export function setupAuth(app: any) {
   app.use(
     session({
-      store: new PostgresStore({ pool, createTableIfMissing: true }),
+      store: new PostgresStore({ 
+        pool: sessionPool, 
+        createTableIfMissing: true 
+      }),
       secret: process.env.SESSION_SECRET || "skviirtl_secret",
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: false }, // Set to true in production with HTTPS
+      cookie: { 
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+      }, 
     })
   );
 }
@@ -57,7 +69,7 @@ export class DatabaseStorage implements IStorage {
         return user;
     } catch (e) {
         // Fallback mock user if DB fails (for dev only)
-        return { ...insertUser, id: 1, isAdmin: false } as User;
+        return { ...insertUser, id: 1, isAdmin: 0 } as unknown as User;
     }
   }
 
