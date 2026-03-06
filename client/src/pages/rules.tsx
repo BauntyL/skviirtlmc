@@ -58,27 +58,35 @@ export default function Rules() {
               <CardContent className="p-0">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">1.1. Использование читов и стороннего ПО</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.1. Использование читов и стороннего ПО</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6 leading-relaxed">
-                      Запрещено использование любых модификаций клиента, дающих преимущество над другими игроками (X-Ray, KillAura, Fly и т.д.). 
+                      Запрещено использование любых модификаций клиента, дающих преимущество над другими игроками (X-Ray, KillAura, Fly и т.д.). Разрешены только косметические моды (MiniMap без пещер, FullBright, ReplayMod).
                       <br /><br />
-                      <span className="text-red-400 font-bold">Наказание:</span> Перманентный бан.
+                      <span className="text-red-400 font-bold">Наказание:</span> Перманентный бан по IP и UUID.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">1.2. Ошибки и баги (Дюпы)</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.2. Ошибки и баги (Дюпы)</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Запрещено использование багов игры или плагинов для личной выгоды (особенно дюп предметов). О найденных багах необходимо сообщать администрации.
+                      Запрещено использование багов игры или плагинов для личной выгоды (особенно дюп предметов). О найденных багах необходимо сообщать администрации. За сокрытие критического бага — бан.
                       <br /><br />
                       <span className="text-red-400 font-bold">Наказание:</span> Бан от 30 дней до перманентного.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-3" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">1.3. Поведение в чате</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.3. Поведение в чате</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Запрещены оскорбления, флуд, спам, реклама сторонних ресурсов и разжигание ненависти. Уважайте друг друга.
+                      Запрещены оскорбления, флуд, спам, реклама сторонних ресурсов и разжигание ненависти. Уважайте друг друга. Запрещена продажа игровых ресурсов за реальные деньги (кроме официального доната).
                       <br /><br />
                       <span className="text-red-400 font-bold">Наказание:</span> Мут от 1 часа до бана на неделю.
+                    </AccordionContent>
+                  </AccordionItem>
+                  <AccordionItem value="item-4" className="border-white/10 px-6">
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.4. Мультиаккаунты и Скины</AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground pb-6">
+                      Один игрок — один аккаунт. Использование твинков для обхода бана или фарма ресурсов запрещено. Скины не должны содержать эротических элементов или пропаганды запрещенных организаций.
+                      <br /><br />
+                      <span className="text-red-400 font-bold">Наказание:</span> Бан всех аккаунтов / Кик до смены скина.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -98,22 +106,34 @@ export default function Rules() {
                 </div>
               </CardHeader>
               <CardContent className="p-6 space-y-6">
+                <div className="p-4 rounded-2xl bg-primary/10 border border-primary/20 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 rounded-xl bg-primary text-primary-foreground font-bold">/pvp</div>
+                    <p className="text-sm text-white">Используйте эту команду, чтобы включить или выключить режим сражений в любой момент!</p>
+                  </div>
+                  <Badge className="bg-primary text-white">Основная команда</Badge>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
                     <h3 className="text-green-400 font-bold mb-2 flex items-center gap-2">
                       <Shield className="w-4 h-4" /> Для PVE игроков
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Вы можете отключить режим PVP в настройках. Запрещено намеренно мешать строительству или "запирать" мирных игроков. Гриферство в приватах запрещено.
-                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                      <li>Вы можете полностью отключить PVP и спокойно строить.</li>
+                      <li>Запрещено убивать игроков ловушками, лавой или мобами, если у них выключен PVP.</li>
+                      <li>Гриферство в приватах и воровство ресурсов запрещено.</li>
+                    </ul>
                   </div>
                   <div className="p-5 rounded-2xl bg-white/5 border border-white/5">
                     <h3 className="text-red-400 font-bold mb-2 flex items-center gap-2">
                       <Swords className="w-4 h-4" /> Для PVP игроков
                     </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      Сражения разрешены только между игроками с включенным PVP. Убийство новичков (в течение 1 часа после первого захода) не приветствуется.
-                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
+                      <li>Сражения разрешены только между игроками с включенным статусом.</li>
+                      <li>Запрещено "PVP-бегство" (выход из игры во время боя). Система накажет вас автоматически.</li>
+                      <li>Убийство новичков сразу после спавна — плохой тон.</li>
+                    </ul>
                   </div>
                 </div>
                 
@@ -121,9 +141,9 @@ export default function Rules() {
                   <div className="flex gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
                     <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
                     <div>
-                      <h4 className="text-amber-500 font-bold text-sm uppercase">Важно про гриферство</h4>
+                      <h4 className="text-amber-500 font-bold text-sm uppercase">Территории и строительство</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Разрушение чужих построек, даже если они не запривачены, считается гриферством, если это не является частью официально объявленного рейда кланов.
+                        Запрещено строить свои объекты ближе 150 блоков к чужому привату без согласия владельца. Порча ландшафта (столбы из земли, ямы 1х1) вокруг чужих баз приравнивается к гриферству.
                       </p>
                     </div>
                   </div>
@@ -146,21 +166,23 @@ export default function Rules() {
               <CardContent className="p-0">
                 <Accordion type="single" collapsible className="w-full">
                   <AccordionItem value="item-1" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">3.1. Создание и управление</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">3.1. Создание и управление</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Клан должен иметь уникальное название и четкую структуру. Лидер несет ответственность за действия всех участников клана.
+                      Клан должен иметь уникальное название без мата и оскорблений. Лидер несет полную ответственность за действия участников. Если участник клана нарушает правила сервера — клан может получить предупреждение.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-2" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">3.2. Дипломатия и союзы</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">3.2. Дипломатия и союзы</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Кланы могут заключать союзы или объявлять войну. Все дипломатические изменения должны быть зафиксированы (если это предусмотрено системой).
+                      Кланы могут заключать союзы. Предательство союзника (нападение без расторжения союза) считается нарушением игровой этики и может караться временным исключением клана из системы войн.
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-3" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6">3.3. Предательство</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">3.3. Предательство (Инсайд)</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Кража ресурсов клана участником ("инсайд") наказывается баном. Мы за честную игру внутри команд.
+                      Кража ресурсов из сундуков клана его же участником с целью ухода или передачи другому клану запрещена. Мы ценим верность своей команде.
+                      <br /><br />
+                      <span className="text-red-400 font-bold">Наказание:</span> Бан участника, возврат ресурсов (по возможности).
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -185,21 +207,28 @@ export default function Rules() {
                     <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center shrink-0 font-bold">1</div>
                     <div>
                       <h4 className="text-white font-bold mb-1">Объявление рейда</h4>
-                      <p className="text-sm text-muted-foreground">Рейд считается легитимным только если между кланами официально объявлена война. Беспричинный снос базы запрещен.</p>
+                      <p className="text-sm text-muted-foreground">Рейд считается легитимным только при наличии войны. Нападение на PVE-игроков или их постройки запрещено и карается как гриферство.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center shrink-0 font-bold">2</div>
                     <div>
-                      <h4 className="text-white font-bold mb-1">Лимит разрушений</h4>
-                      <p className="text-sm text-muted-foreground">Цель рейда — захват ресурсов, а не полное уничтожение ландшафта. Запрещено заливать базу лавой или водой "просто так".</p>
+                      <h4 className="text-white font-bold mb-1">Разрушения и Взрывы</h4>
+                      <p className="text-sm text-muted-foreground">Использование TNT разрешено только для пробития стен к сундукам. Запрещено полное уничтожение базы ("вайп под ноль") и ландшафта вокруг нее.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-4">
                     <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center shrink-0 font-bold">3</div>
                     <div>
-                      <h4 className="text-white font-bold mb-1">Время отдыха</h4>
-                      <p className="text-sm text-muted-foreground">После успешного рейда у проигравшего клана есть 48 часов "мирного времени" на восстановление, в течение которых их нельзя атаковать повторно.</p>
+                      <h4 className="text-white font-bold mb-1">Воровство и Трофеи</h4>
+                      <p className="text-sm text-muted-foreground">Вы имеете право забрать любые ресурсы. Однако запрещено сжигать или выбрасывать то, что вы не можете унести, просто чтобы ресурсы пропали.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="w-8 h-8 rounded-full bg-red-500/20 text-red-500 flex items-center justify-center shrink-0 font-bold">4</div>
+                    <div>
+                      <h4 className="text-white font-bold mb-1">Мирное время</h4>
+                      <p className="text-sm text-muted-foreground">После рейда у клана есть 48 часов защиты. Повторный рейд в это время невозможен.</p>
                     </div>
                   </div>
                 </div>
