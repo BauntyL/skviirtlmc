@@ -2,6 +2,10 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/live-map/:path*",
+      "destination": "http://213.152.43.45:25979/:path*"
+    },
+    {
       "source": "/api/auth/register",
       "destination": "/api/auth/handler?type=register"
     },
