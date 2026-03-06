@@ -13,6 +13,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const navLinks = [
     { href: "/", label: "Главная" },
     { href: "/start", label: "Как начать" },
+    { href: "/rules", label: "Правила" },
     { href: "/clans", label: "Кланы" },
     { href: "/map", label: "Карта" },
     // { href: "/store", label: "Магазин" }, // Hidden for now

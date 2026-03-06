@@ -16,6 +16,7 @@ import Store from "@/pages/store";
 import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import Map from "@/pages/map";
+import Rules from "@/pages/rules";
 
 function Router() {
   return (
@@ -23,6 +24,7 @@ function Router() {
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/start" component={Start} />
+        <Route path="/rules" component={Rules} />
         <Route path="/clans" component={Clans} />
         <Route path="/map" component={Map} />
         <Route path="/store" component={Store} />
