@@ -82,11 +82,11 @@ export default function Rules() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-4" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.4. Мультиаккаунты и Скины</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.4. Аккаунты и Скины</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Один игрок — один аккаунт. Использование твинков для обхода бана или фарма ресурсов запрещено. Скины не должны содержать эротических элементов или пропаганды запрещенных организаций.
+                      Разрешено иметь не более 2-х аккаунтов на одного игрока. Использование дополнительных аккаунтов для обхода бана или массового фарма ресурсов запрещено. Скины не должны содержать эротических элементов или пропаганды запрещенных организаций.
                       <br /><br />
-                      <span className="text-red-400 font-bold">Наказание:</span> Бан всех аккаунтов / Кик до смены скина.
+                      <span className="text-red-400 font-bold">Наказание:</span> Бан лишних аккаунтов / Кик до смены скина.
                     </AccordionContent>
                   </AccordionItem>
                 </Accordion>
@@ -132,7 +132,7 @@ export default function Rules() {
                     <ul className="text-sm text-muted-foreground space-y-2 list-disc list-inside">
                       <li>Сражения разрешены только между игроками с включенным статусом.</li>
                       <li>Запрещено "PVP-бегство" (выход из игры во время боя). Система накажет вас автоматически.</li>
-                      <li>Убийство новичков сразу после спавна — плохой тон.</li>
+                      <li>Честный бой — основа сервера. Запрещено использование сторонних программ.</li>
                     </ul>
                   </div>
                 </div>
@@ -143,7 +143,7 @@ export default function Rules() {
                     <div>
                       <h4 className="text-amber-500 font-bold text-sm uppercase">Территории и строительство</h4>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Запрещено строить свои объекты ближе 150 блоков к чужому привату без согласия владельца. Порча ландшафта (столбы из земли, ямы 1х1) вокруг чужих баз приравнивается к гриферству.
+                        Порча ландшафта (столбы из земли, ямы 1х1, разлитие воды/лавы) вокруг чужих баз приравнивается к гриферству. Уважайте труд других игроков и красоту окружающего мира.
                       </p>
                     </div>
                   </div>
