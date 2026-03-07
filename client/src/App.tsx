@@ -18,6 +18,7 @@ import Dashboard from "@/pages/dashboard";
 import Map from "@/pages/map";
 import Rules from "@/pages/rules";
 import Guides from "@/pages/guides";
+import Events from "@/pages/events";
 import Players from "@/pages/players";
 import Profile from "@/pages/profile";
 
@@ -29,6 +30,7 @@ function Router() {
         <Route path="/start" component={Start} />
         <Route path="/rules" component={Rules} />
         <Route path="/guides" component={Guides} />
+        <Route path="/events" component={Events} />
         <Route path="/players" component={Players} />
         <Route path="/player/:username" component={Profile} />
         <Route path="/clans" component={Clans} />

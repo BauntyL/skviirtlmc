@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, useLogout } from "@/hooks/use-auth";
-import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home } from "lucide-react";
+import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home, Flower2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -53,6 +53,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 Главная
+              </Link>
+
+              <Link
+                href="/events"
+                className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary flex items-center gap-2 ${
+                  location === "/events" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                <div className="w-2 h-2 rounded-full bg-pink-500 animate-pulse" />
+                Ивенты
               </Link>
 
               {/* Info Dropdown */}
@@ -176,6 +186,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 }`}
               >
                 <Home className="w-5 h-5" /> Главная
+              </Link>
+
+              <Link
+                href="/events"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-base font-medium p-3 rounded-xl flex items-center gap-3 ${
+                  location === "/events" ? "bg-pink-500/10 text-pink-400" : "text-muted-foreground hover:bg-white/5"
+                }`}
+              >
+                <Flower2 className="w-5 h-5" /> Ивенты
               </Link>
 
               {/* Mobile Info Group */}
