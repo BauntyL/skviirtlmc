@@ -1,8 +1,14 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, useLogout } from "@/hooks/use-auth";
-import { Gamepad2, Menu, X, LogOut, User as UserIcon } from "lucide-react";
+import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -10,16 +16,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { mutate: logout } = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navLinks = [
-    { href: "/", label: "Главная" },
+  const infoLinks = [
     { href: "/start", label: "Как начать" },
     { href: "/rules", label: "Правила" },
     { href: "/guides", label: "Гайды" },
+  ];
+
+  const communityLinks = [
     { href: "/players", label: "Игроки" },
     { href: "/clans", label: "Кланы" },
-    { href: "/map", label: "Карта" },
-    // { href: "/store", label: "Магазин" }, // Hidden for now
   ];
+
+  const isInfoActive = infoLinks.some(link => location === link.href);
+  const isCommunityActive = communityLinks.some(link => location === link.href);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -40,18 +49,60 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex space-x-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`text-sm font-medium transition-colors hover:text-primary ${
-                    location === link.href ? "text-primary" : "text-muted-foreground"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+            <nav className="hidden md:flex items-center space-x-6">
+              <Link
+                href="/"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location === "/" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Главная
+              </Link>
+
+              {/* Info Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                  isInfoActive ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  Информация <ChevronDown className="w-4 h-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md">
+                  {infoLinks.map((link) => (
+                    <DropdownMenuItem key={link.href} asChild>
+                      <Link href={link.href} className="cursor-pointer w-full">
+                        {link.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Community Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                  isCommunityActive ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  Сообщество <ChevronDown className="w-4 h-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md">
+                  {communityLinks.map((link) => (
+                    <DropdownMenuItem key={link.href} asChild>
+                      <Link href={link.href} className="cursor-pointer w-full">
+                        {link.label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Link
+                href="/map"
+                className={`text-sm font-medium transition-colors hover:text-primary ${
+                  location === "/map" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Карта
+              </Link>
             </nav>
 
             {/* Auth Buttons */}
@@ -93,20 +144,69 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t border-white/10 bg-background pb-4 px-4">
-            <div className="flex flex-col space-y-4 mt-4">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`text-base font-medium p-2 rounded-md ${
-                    location === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-white/5"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              ))}
+          <div className="md:hidden border-t border-white/10 bg-background pb-4 px-4 max-h-[80vh] overflow-y-auto">
+            <div className="flex flex-col space-y-2 mt-4">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-base font-medium p-3 rounded-xl flex items-center gap-3 ${
+                  location === "/" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-white/5"
+                }`}
+              >
+                <Home className="w-5 h-5" /> Главная
+              </Link>
+
+              {/* Mobile Info Group */}
+              <div className="pt-2">
+                <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <Info className="w-3 h-3" /> Информация
+                </div>
+                <div className="mt-1 space-y-1">
+                  {infoLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`text-base font-medium p-3 rounded-xl block ml-4 ${
+                        location === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-white/5"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              {/* Mobile Community Group */}
+              <div className="pt-2">
+                <div className="px-3 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <Users className="w-3 h-3" /> Сообщество
+                </div>
+                <div className="mt-1 space-y-1">
+                  {communityLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`text-base font-medium p-3 rounded-xl block ml-4 ${
+                        location === link.href ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-white/5"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+
+              <Link
+                href="/map"
+                onClick={() => setMobileMenuOpen(false)}
+                className={`text-base font-medium p-3 rounded-xl flex items-center gap-3 ${
+                  location === "/map" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-white/5"
+                }`}
+              >
+                <MapIcon className="w-5 h-5" /> Карта
+              </Link>
               
               <div className="pt-4 border-t border-white/10">
                 {user ? (
