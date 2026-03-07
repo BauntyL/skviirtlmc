@@ -15,6 +15,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { data: user, isLoading } = useAuth();
   const { mutate: logout } = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [communityOpen, setCommunityOpen] = useState(false);
 
   const infoLinks = [
     { href: "/start", label: "Как начать" },
@@ -60,40 +63,50 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
 
               {/* Info Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
-                  isInfoActive ? "text-primary" : "text-muted-foreground"
-                }`}>
-                  Информация <ChevronDown className="w-4 h-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md">
-                  {infoLinks.map((link) => (
-                    <DropdownMenuItem key={link.href} asChild>
-                      <Link href={link.href} className="cursor-pointer w-full">
-                        {link.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div 
+                onMouseEnter={() => setInfoOpen(true)}
+                onMouseLeave={() => setInfoOpen(false)}
+              >
+                <DropdownMenu open={infoOpen} onOpenChange={setInfoOpen} modal={false}>
+                  <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                    isInfoActive ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    Информация <ChevronDown className="w-4 h-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md min-w-[160px]">
+                    {infoLinks.map((link) => (
+                      <DropdownMenuItem key={link.href} asChild>
+                        <Link href={link.href} className="cursor-pointer w-full py-2">
+                          {link.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
               {/* Community Dropdown */}
-              <DropdownMenu>
-                <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
-                  isCommunityActive ? "text-primary" : "text-muted-foreground"
-                }`}>
-                  Сообщество <ChevronDown className="w-4 h-4" />
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md">
-                  {communityLinks.map((link) => (
-                    <DropdownMenuItem key={link.href} asChild>
-                      <Link href={link.href} className="cursor-pointer w-full">
-                        {link.label}
-                      </Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div 
+                onMouseEnter={() => setCommunityOpen(true)}
+                onMouseLeave={() => setCommunityOpen(false)}
+              >
+                <DropdownMenu open={communityOpen} onOpenChange={setCommunityOpen} modal={false}>
+                  <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                    isCommunityActive ? "text-primary" : "text-muted-foreground"
+                  }`}>
+                    Сообщество <ChevronDown className="w-4 h-4" />
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md min-w-[160px]">
+                    {communityLinks.map((link) => (
+                      <DropdownMenuItem key={link.href} asChild>
+                        <Link href={link.href} className="cursor-pointer w-full py-2">
+                          {link.label}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
 
               <Link
                 href="/map"
