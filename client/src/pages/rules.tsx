@@ -138,6 +138,15 @@ export default function Rules() {
                 </div>
                 
                 <div className="space-y-4">
+                  <div className="flex gap-4 p-4 rounded-xl bg-primary/10 border border-primary/20">
+                    <Shield className="w-6 h-6 text-primary shrink-0" />
+                    <div>
+                      <h4 className="text-primary font-bold text-sm uppercase">Правила привата территорий</h4>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Каждый игрок может создать до <span className="text-white font-bold">7 регионов</span>. Максимальный размер одного региона — <span className="text-white font-bold">30 000 блоков</span>.
+                      </p>
+                    </div>
+                  </div>
                   <div className="flex gap-4 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
                     <AlertTriangle className="w-6 h-6 text-amber-500 shrink-0" />
                     <div>

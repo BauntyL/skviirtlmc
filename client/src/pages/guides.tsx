@@ -20,8 +20,7 @@ export default function Guides() {
       icon: Mic,
       description: "На нашем сервере установлен плагин на голосовой чат. Для работы необходимо установить мод Plasmo Voice на свой клиент (Fabric/Forge). Нажмите 'V' в игре после установки, чтобы открыть меню настроек.",
       links: [
-        { label: "Скачать мод", url: "https://modrinth.com/plugin/plasmo-voice" },
-        { label: "Вики мода", url: "https://plasmovoice.com/ru/wiki" }
+        { label: "Скачать мод", url: "https://modrinth.com/plugin/plasmo-voice" }
       ]
     },
     {
