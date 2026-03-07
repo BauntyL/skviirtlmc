@@ -53,17 +53,24 @@ export class DatabaseStorage implements IStorage {
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
     
-    // Удаляем старые коды этого пользователя
-    await db.delete(authCodes).where(eq(authCodes.username, username));
+    console.log(`Generating code for ${username} (ID: ${userId}): ${code}`);
     
-    await db.insert(authCodes).values({ 
-      username, 
-      code, 
-      expiresAt,
-      userId
-    });
-    
-    return code;
+    try {
+      // Удаляем старые коды этого пользователя
+      await db.delete(authCodes).where(eq(authCodes.username, username));
+      
+      await db.insert(authCodes).values({ 
+        username, 
+        code, 
+        expiresAt,
+        userId
+      });
+      
+      return code;
+    } catch (err) {
+      console.error("Error in generateAuthCode:", err);
+      throw err;
+    }
   }
 
   async verifyAuthCode(username: string, code: string): Promise<boolean> {

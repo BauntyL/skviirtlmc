@@ -272,15 +272,22 @@ export async function registerRoutes(
 
   // Linking Code Generation
   app.post(api.auth.generateCode.path, async (req, res) => {
+    console.log("POST /api/auth/code/generate - Session:", req.session);
     if (!req.session?.userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
     const user = await storage.getUser(req.session.userId);
     if (!user) {
+      console.log("User not found for ID:", req.session.userId);
       return res.status(401).json({ message: "User not found" });
     }
-    const code = await storage.generateAuthCode(user.id, user.username);
-    res.status(200).json({ code });
+    try {
+      const code = await storage.generateAuthCode(user.id, user.username);
+      res.status(200).json({ code });
+    } catch (err) {
+      console.error("Route error generating code:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
   });
 
   return httpServer;
