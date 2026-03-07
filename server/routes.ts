@@ -127,7 +127,7 @@ export async function registerRoutes(
                               const updateData: any = {};
                               if (p.clanBalance) updateData.balance = p.clanBalance.toString();
                               const isLeader = (p.rank && ['leader', 'admin', 'владелец', 'owner'].includes(p.rank.toLowerCase())) ||
-                                               (p.clanRank && ['leader', 'лидер', 'owner', 'владелец'].includes(p.clanRank.toLowerCase()));
+                                               (p.clanRank && ['leader', 'лидер', 'owner', 'владелец', 'manager', 'менеджер'].includes(p.clanRank.toLowerCase()));
                               if (isLeader) updateData.leader = p.name;
                               if (Object.keys(updateData).length > 0) {
                                   await db.update(clans).set(updateData).where(eq(clans.name, clanName));
