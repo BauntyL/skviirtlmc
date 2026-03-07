@@ -4,20 +4,19 @@ import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: user, isLoading } = useAuth();
   const { mutate: logout } = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
-  const [infoOpen, setInfoOpen] = useState(false);
-  const [communityOpen, setCommunityOpen] = useState(false);
 
   const infoLinks = [
     { href: "/start", label: "Как начать" },
@@ -52,70 +51,86 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <Link
-                href="/"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === "/" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                Главная
-              </Link>
+            <nav className="hidden md:flex items-center">
+              <NavigationMenu>
+                <NavigationMenuList className="space-x-2">
+                  <NavigationMenuItem>
+                    <Link
+                      href="/"
+                      className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
+                        location === "/" ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      Главная
+                    </Link>
+                  </NavigationMenuItem>
 
-              {/* Info Dropdown */}
-              <div 
-                onMouseEnter={() => setInfoOpen(true)}
-                onMouseLeave={() => setInfoOpen(false)}
-              >
-                <DropdownMenu open={infoOpen} onOpenChange={setInfoOpen} modal={false}>
-                  <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
-                    isInfoActive ? "text-primary" : "text-muted-foreground"
-                  }`}>
-                    Информация <ChevronDown className="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md min-w-[160px]">
-                    {infoLinks.map((link) => (
-                      <DropdownMenuItem key={link.href} asChild>
-                        <Link href={link.href} className="cursor-pointer w-full py-2">
-                          {link.label}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                  {/* Info Dropdown */}
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className={`bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none border-none ${
+                      isInfoActive ? "text-primary" : "text-muted-foreground"
+                    }`}>
+                      Информация
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[200px] gap-1 p-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl">
+                        {infoLinks.map((link) => (
+                          <li key={link.href}>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                href={link.href}
+                                className={`block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
+                                  location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
+                                }`}
+                              >
+                                <div className="text-sm font-bold leading-none">{link.label}</div>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
 
-              {/* Community Dropdown */}
-              <div 
-                onMouseEnter={() => setCommunityOpen(true)}
-                onMouseLeave={() => setCommunityOpen(false)}
-              >
-                <DropdownMenu open={communityOpen} onOpenChange={setCommunityOpen} modal={false}>
-                  <DropdownMenuTrigger className={`flex items-center gap-1 text-sm font-medium transition-colors hover:text-primary outline-none ${
-                    isCommunityActive ? "text-primary" : "text-muted-foreground"
-                  }`}>
-                    Сообщество <ChevronDown className="w-4 h-4" />
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-zinc-950/90 border-white/10 backdrop-blur-md min-w-[160px]">
-                    {communityLinks.map((link) => (
-                      <DropdownMenuItem key={link.href} asChild>
-                        <Link href={link.href} className="cursor-pointer w-full py-2">
-                          {link.label}
-                        </Link>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
+                  {/* Community Dropdown */}
+                  <NavigationMenuItem>
+                    <NavigationMenuTrigger className={`bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none border-none ${
+                      isCommunityActive ? "text-primary" : "text-muted-foreground"
+                    }`}>
+                      Сообщество
+                    </NavigationMenuTrigger>
+                    <NavigationMenuContent>
+                      <ul className="grid w-[200px] gap-1 p-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl">
+                        {communityLinks.map((link) => (
+                          <li key={link.href}>
+                            <NavigationMenuLink asChild>
+                              <Link
+                                href={link.href}
+                                className={`block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
+                                  location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
+                                }`}
+                              >
+                                <div className="text-sm font-bold leading-none">{link.label}</div>
+                              </Link>
+                            </NavigationMenuLink>
+                          </li>
+                        ))}
+                      </ul>
+                    </NavigationMenuContent>
+                  </NavigationMenuItem>
 
-              <Link
-                href="/map"
-                className={`text-sm font-medium transition-colors hover:text-primary ${
-                  location === "/map" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                Карта
-              </Link>
+                  <NavigationMenuItem>
+                    <Link
+                      href="/map"
+                      className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
+                        location === "/map" ? "text-primary" : "text-muted-foreground"
+                      }`}
+                    >
+                      Карта
+                    </Link>
+                  </NavigationMenuItem>
+                </NavigationMenuList>
+              </NavigationMenu>
             </nav>
 
             {/* Auth Buttons */}
