@@ -74,6 +74,23 @@ export const api = {
       },
     },
   },
+  users: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/users' as const,
+      responses: {
+        200: z.array(userWithoutPassword),
+      },
+    },
+    byUsername: {
+      method: 'GET' as const,
+      path: '/api/users/:username' as const,
+      responses: {
+        200: userWithoutPassword,
+        404: errorSchemas.notFound,
+      },
+    },
+  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {

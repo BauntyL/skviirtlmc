@@ -286,6 +286,22 @@ export async function registerRoutes(
     res.status(200).json(clans);
   });
 
+  app.get("/api/users/:username", async (req, res) => {
+    const { username } = req.params;
+    const user = await storage.getUserByUsername(username);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const { password, ...userWithoutPassword } = user;
+    res.status(200).json(userWithoutPassword);
+  });
+
+  app.get("/api/users", async (req, res) => {
+    const users = await storage.getUsers();
+    const usersWithoutPassword = users.map(({ password, ...rest }) => rest);
+    res.status(200).json(usersWithoutPassword);
+  });
+
   // Linking Code Generation
   app.post(api.auth.generateCode.path, async (req, res) => {
     console.log(`[AUTH] POST /api/auth/code/generate - Session ID: ${req.sessionID}`);

@@ -13,6 +13,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getClans(): Promise<Clan[]>;
   createClan(clan: InsertClan): Promise<Clan>;
+  getUsers(): Promise<User[]>;
+  getUserByUsername(username: string): Promise<User | undefined>;
   generateAuthCode(userId: number, username: string): Promise<string>;
   verifyAuthCode(username: string, code: string): Promise<boolean>;
   sessionStore: session.Store;
@@ -47,6 +49,10 @@ export class DatabaseStorage implements IStorage {
   async createClan(insertClan: InsertClan): Promise<Clan> {
     const [clan] = await db.insert(clans).values(insertClan).returning();
     return clan;
+  }
+
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
   }
 
   async generateAuthCode(userId: number, username: string): Promise<string> {
