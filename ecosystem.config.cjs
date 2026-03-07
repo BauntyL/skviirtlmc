@@ -3,8 +3,8 @@ const path = require('path');
 module.exports = {
   apps: [{
     name: "skviirtl-site",
-    script: "tsx",
-    args: "server/index.ts",
+    script: "node",
+    args: "dist/index.cjs",
     interpreter: "node",
     cwd: "/var/www/skviirtl-site",
     env: {

@@ -30,8 +30,9 @@ export default function Dashboard() {
     onSuccess: (data) => {
       setLinkCode(data.code);
     },
-    onError: () => {
-        toast({ title: "Ошибка", description: "Не удалось сгенерировать код", variant: "destructive" });
+    onError: (error: Error) => {
+        console.error("Generate code error details:", error);
+        toast({ title: "Ошибка", description: `Не удалось сгенерировать код: ${error.message}`, variant: "destructive" });
     }
   });
 

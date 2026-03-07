@@ -34,9 +34,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "dist/*,package.json,ecosystem.config.cjs"
+          source: "dist/**,package.json,ecosystem.config.cjs"
           target: "/var/www/skviirtl-site"
-          strip_components: 0 # Файлы уже в корне репозитория
+          strip_components: 0
 
       - name: Restart PM2
         uses: appleboy/ssh-action@master
