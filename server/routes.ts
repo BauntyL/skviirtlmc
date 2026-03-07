@@ -89,7 +89,21 @@ export async function registerRoutes(
               .where(eq(users.id, authCode.userId));
           
           await db.delete(authCodes).where(eq(authCodes.id, authCode.id));
-          return res.status(200).json({ success: true });
+          
+          // Возвращаем данные пользователя сразу после обновления, чтобы фронтенд мог их отобразить
+          const [updatedUser] = await db.select().from(users).where(eq(users.id, authCode.userId));
+          return res.status(200).json({ 
+              success: true, 
+              user: updatedUser ? {
+                  id: updatedUser.id,
+                  username: updatedUser.username,
+                  balance: updatedUser.balance,
+                  realBalance: updatedUser.realBalance,
+                  clan: updatedUser.clan,
+                  rank: updatedUser.rank,
+                  minecraftUuid: updatedUser.minecraftUuid
+              } : null
+          });
       }
 
       // === SYNC (Main sync logic) ===
