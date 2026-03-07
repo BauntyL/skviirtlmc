@@ -3,20 +3,14 @@ import { useAuth, useLogout } from "@/hooks/use-auth";
 import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
-
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { data: user, isLoading } = useAuth();
   const { mutate: logout } = useLogout();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [communityOpen, setCommunityOpen] = useState(false);
 
   const infoLinks = [
     { href: "/start", label: "Как начать" },
@@ -51,86 +45,86 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center">
-              <NavigationMenu>
-                <NavigationMenuList className="space-x-2">
-                  <NavigationMenuItem>
-                    <Link
-                      href="/"
-                      className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                        location === "/" ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      Главная
-                    </Link>
-                  </NavigationMenuItem>
+            <nav className="hidden md:flex items-center space-x-2">
+              <Link
+                href="/"
+                className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location === "/" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Главная
+              </Link>
 
-                  {/* Info Dropdown */}
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className={`bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none border-none ${
-                      isInfoActive ? "text-primary" : "text-muted-foreground"
-                    }`}>
-                      Информация
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[200px] gap-1 p-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl">
-                        {infoLinks.map((link) => (
-                          <li key={link.href}>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                href={link.href}
-                                className={`block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
-                                  location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
-                                }`}
-                              >
-                                <div className="text-sm font-bold leading-none">{link.label}</div>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+              {/* Info Dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setInfoOpen(true)}
+                onMouseLeave={() => setInfoOpen(false)}
+              >
+                <button className={`flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                  isInfoActive ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  Информация <ChevronDown className="w-4 h-4" />
+                </button>
+                
+                {infoOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-[200px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl p-2 overflow-hidden">
+                      {infoLinks.map((link) => (
+                        <Link 
+                          key={link.href}
+                          href={link.href}
+                          className={`block select-none rounded-lg p-3 text-sm font-bold leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
+                            location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
+                          }`}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
 
-                  {/* Community Dropdown */}
-                  <NavigationMenuItem>
-                    <NavigationMenuTrigger className={`bg-transparent hover:bg-transparent focus:bg-transparent data-[state=open]:bg-transparent px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none border-none ${
-                      isCommunityActive ? "text-primary" : "text-muted-foreground"
-                    }`}>
-                      Сообщество
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent>
-                      <ul className="grid w-[200px] gap-1 p-2 bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl">
-                        {communityLinks.map((link) => (
-                          <li key={link.href}>
-                            <NavigationMenuLink asChild>
-                              <Link
-                                href={link.href}
-                                className={`block select-none space-y-1 rounded-lg p-3 leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
-                                  location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
-                                }`}
-                              >
-                                <div className="text-sm font-bold leading-none">{link.label}</div>
-                              </Link>
-                            </NavigationMenuLink>
-                          </li>
-                        ))}
-                      </ul>
-                    </NavigationMenuContent>
-                  </NavigationMenuItem>
+              {/* Community Dropdown */}
+              <div 
+                className="relative"
+                onMouseEnter={() => setCommunityOpen(true)}
+                onMouseLeave={() => setCommunityOpen(false)}
+              >
+                <button className={`flex items-center gap-1 px-4 py-2 text-sm font-medium transition-colors hover:text-primary outline-none ${
+                  isCommunityActive ? "text-primary" : "text-muted-foreground"
+                }`}>
+                  Сообщество <ChevronDown className="w-4 h-4" />
+                </button>
 
-                  <NavigationMenuItem>
-                    <Link
-                      href="/map"
-                      className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                        location === "/map" ? "text-primary" : "text-muted-foreground"
-                      }`}
-                    >
-                      Карта
-                    </Link>
-                  </NavigationMenuItem>
-                </NavigationMenuList>
-              </NavigationMenu>
+                {communityOpen && (
+                  <div className="absolute top-full left-0 pt-2 w-[200px] z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="bg-zinc-950/95 border border-white/10 backdrop-blur-xl rounded-xl shadow-2xl p-2 overflow-hidden">
+                      {communityLinks.map((link) => (
+                        <Link 
+                          key={link.href}
+                          href={link.href}
+                          className={`block select-none rounded-lg p-3 text-sm font-bold leading-none no-underline outline-none transition-colors hover:bg-white/5 hover:text-primary ${
+                            location === link.href ? "text-primary bg-white/5" : "text-muted-foreground"
+                          }`}
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <Link
+                href="/map"
+                className={`px-4 py-2 text-sm font-medium transition-colors hover:text-primary ${
+                  location === "/map" ? "text-primary" : "text-muted-foreground"
+                }`}
+              >
+                Карта
+              </Link>
             </nav>
 
             {/* Auth Buttons */}
