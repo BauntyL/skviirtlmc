@@ -125,8 +125,10 @@ export async function registerRoutes(
               for (const p of players) {
                   // Clan Auto-Create
                   if (p.clan) {
-                      const clanName = p.clan.replace(/[\[\]]/g, "");
-                      if (clanName) {
+                      const clanName = p.clan.replace(/[\[\]]/g, "").trim();
+                      const blacklistedNames = ["не в команде", "none", "null", "no team", "нет команды"];
+                      
+                      if (clanName && !blacklistedNames.includes(clanName.toLowerCase())) {
                           const existingClans = await db.select().from(clans).where(eq(clans.name, clanName));
                           if (existingClans.length === 0) {
                               await db.insert(clans).values({
