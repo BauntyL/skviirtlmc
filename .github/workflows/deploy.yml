@@ -18,16 +18,14 @@ jobs:
         with:
           node-version: '20'
           cache: 'npm'
-          cache-dependency-path: AAAsite/SkviirtlServerSite/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install dependencies
         run: |
-          cd AAAsite/SkviirtlServerSite
           npm install
 
       - name: Build project
         run: |
-          cd AAAsite/SkviirtlServerSite
           npm run build
 
       - name: Deploy to VPS
@@ -36,9 +34,9 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
-          source: "AAAsite/SkviirtlServerSite/dist/*,AAAsite/SkviirtlServerSite/package.json,AAAsite/SkviirtlServerSite/ecosystem.config.cjs"
+          source: "dist/*,package.json,ecosystem.config.cjs"
           target: "/var/www/skviirtl-site"
-          strip_components: 2 # Убираем AAAsite/SkviirtlServerSite из пути при копировании
+          strip_components: 0 # Файлы уже в корне репозитория
 
       - name: Restart PM2
         uses: appleboy/ssh-action@master
