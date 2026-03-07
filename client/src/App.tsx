@@ -17,6 +17,7 @@ import AuthPage from "@/pages/auth";
 import Dashboard from "@/pages/dashboard";
 import Map from "@/pages/map";
 import Rules from "@/pages/rules";
+import Guides from "@/pages/guides";
 import Players from "@/pages/players";
 import Profile from "@/pages/profile";
 
@@ -27,6 +28,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/start" component={Start} />
         <Route path="/rules" component={Rules} />
+        <Route path="/guides" component={Guides} />
         <Route path="/players" component={Players} />
         <Route path="/player/:username" component={Profile} />
         <Route path="/clans" component={Clans} />

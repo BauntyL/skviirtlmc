@@ -14,6 +14,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/", label: "Главная" },
     { href: "/start", label: "Как начать" },
     { href: "/rules", label: "Правила" },
+    { href: "/guides", label: "Гайды" },
     { href: "/players", label: "Игроки" },
     { href: "/clans", label: "Кланы" },
     { href: "/map", label: "Карта" },
