@@ -1,0 +1,52 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # Или ваша основная ветка
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: AAAsite/SkviirtlServerSite/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd AAAsite/SkviirtlServerSite
+          npm install
+
+      - name: Build project
+        run: |
+          cd AAAsite/SkviirtlServerSite
+          npm run build
+
+      - name: Deploy to VPS
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "AAAsite/SkviirtlServerSite/dist/*,AAAsite/SkviirtlServerSite/package.json,AAAsite/SkviirtlServerSite/ecosystem.config.cjs"
+          target: "/var/www/skviirtl-site"
+          strip_components: 2 # Убираем AAAsite/SkviirtlServerSite из пути при копировании
+
+      - name: Restart PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/skviirtl-site
+            npm install --production
+            pm2 restart ecosystem.config.cjs || pm2 start ecosystem.config.cjs

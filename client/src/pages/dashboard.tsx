@@ -1,5 +1,6 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
+import { api } from "@shared/routes";
 import { Coins, Wallet, Sparkles, User as UserIcon, Activity, Box, Users, Link as LinkIcon, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +24,7 @@ export default function Dashboard() {
 
   const generateCodeMutation = useMutation({
     mutationFn: async () => {
-      const res = await apiRequest("POST", "/api/auth/code/generate", {});
+      const res = await apiRequest(api.auth.generateCode.method, api.auth.generateCode.path, {});
       return await res.json();
     },
     onSuccess: (data) => {

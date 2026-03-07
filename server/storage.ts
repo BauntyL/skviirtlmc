@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, clans, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { users, clans, authCodes, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
+import { eq, and, gt } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -13,6 +13,8 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   getClans(): Promise<Clan[]>;
   createClan(clan: InsertClan): Promise<Clan>;
+  generateAuthCode(userId: number, username: string): Promise<string>;
+  verifyAuthCode(username: string, code: string): Promise<boolean>;
   sessionStore: session.Store;
 }
 
@@ -45,6 +47,39 @@ export class DatabaseStorage implements IStorage {
   async createClan(insertClan: InsertClan): Promise<Clan> {
     const [clan] = await db.insert(clans).values(insertClan).returning();
     return clan;
+  }
+
+  async generateAuthCode(userId: number, username: string): Promise<string> {
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
+    
+    // Удаляем старые коды этого пользователя
+    await db.delete(authCodes).where(eq(authCodes.username, username));
+    
+    await db.insert(authCodes).values({ 
+      username, 
+      code, 
+      expiresAt,
+      userId
+    });
+    
+    return code;
+  }
+
+  async verifyAuthCode(username: string, code: string): Promise<boolean> {
+    const now = new Date().toISOString();
+    const [found] = await db.select().from(authCodes)
+      .where(and(
+        eq(authCodes.username, username),
+        eq(authCodes.code, code),
+        gt(authCodes.expiresAt, now)
+      ));
+    
+    if (!found) return false;
+
+    // Удаляем использованный код
+    await db.delete(authCodes).where(eq(authCodes.id, found.id));
+    return true;
   }
 }
 

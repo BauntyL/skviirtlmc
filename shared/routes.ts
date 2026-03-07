@@ -56,6 +56,14 @@ export const api = {
         200: z.object({ message: z.string() }),
       },
     },
+    generateCode: {
+      method: 'POST' as const,
+      path: '/api/auth/code/generate' as const,
+      responses: {
+        200: z.object({ code: z.string() }),
+        401: errorSchemas.unauthorized,
+      },
+    },
   },
   clans: {
     list: {

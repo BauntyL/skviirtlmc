@@ -69,46 +69,48 @@ app.use((req, res, next) => {
 // BETTER APPROACH: Export a function that Vercel calls, or use a pattern where app is fully configured.
 
 // Let's make registerRoutes setup the app immediately.
-registerRoutes(httpServer, app);
+(async () => {
+  try {
+    // Setup routes
+    await registerRoutes(httpServer, app);
 
-app.use((err: any, _req: Request, res: Response, next: NextFunction) => {
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
+    // Global error handler
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      console.error("Internal Server Error:", err);
+      if (res.headersSent) return;
+      res.status(status).json({ message });
+    });
 
-  console.error("Internal Server Error:", err);
-
-  if (res.headersSent) {
-    return next(err);
-  }
-
-  return res.status(status).json({ message });
-});
-
-// Serve static only in dev or if not on Vercel (Vercel handles static via output config)
-if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
-  (async () => {
+    // Static files and Vite
+    if (process.env.NODE_ENV !== "production" && process.env.VERCEL !== "1") {
       const { setupVite } = await import("./vite");
       await setupVite(httpServer, app);
-  })();
-}
+    } else if (process.env.VERCEL !== "1") {
+      // Production mode on VPS
+      serveStatic(app);
+    }
 
-// ALWAYS serve the app on the port specified in the environment variable PORT
-// Other ports are firewalled. Default to 5000 if not specified.
-// this serves both the API and the client.
-// It is the only port that is not firewalled.
-const port = parseInt(process.env.PORT || "5000", 10);
-// Only listen if not imported (Vercel imports this file)
-if (import.meta.url === `file://${process.argv[1]}`) {
-  httpServer.listen(
-      {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-      },
-      () => {
-      log(`serving on port ${port}`);
-      },
-  );
-}
+    // Start server
+    const port = parseInt(process.env.PORT || "5000", 10);
+    const isVercel = process.env.VERCEL === "1";
+
+    if (!isVercel) {
+      httpServer.listen(
+        {
+          port,
+          host: "0.0.0.0",
+        },
+        () => {
+          log(`serving on port ${port}`);
+        },
+      );
+    }
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
+})();
 
 export default app;
