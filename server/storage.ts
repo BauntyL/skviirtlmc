@@ -57,18 +57,20 @@ export class DatabaseStorage implements IStorage {
     
     try {
       // Удаляем старые коды этого пользователя
+      console.log(`Deleting old codes for ${username}...`);
       await db.delete(authCodes).where(eq(authCodes.username, username));
       
+      console.log(`Inserting new code ${code} for ${username}...`);
       await db.insert(authCodes).values({ 
         username, 
         code, 
         expiresAt,
         userId
       });
-      
+      console.log(`Code generated successfully.`);
       return code;
     } catch (err) {
-      console.error("Error in generateAuthCode:", err);
+      console.error("CRITICAL ERROR in generateAuthCode:", err);
       throw err;
     }
   }

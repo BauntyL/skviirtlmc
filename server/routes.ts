@@ -272,20 +272,27 @@ export async function registerRoutes(
 
   // Linking Code Generation
   app.post(api.auth.generateCode.path, async (req, res) => {
-    console.log("POST /api/auth/code/generate - Session:", req.session);
+    console.log(`[AUTH] POST /api/auth/code/generate - Session ID: ${req.sessionID}`);
+    console.log(`[AUTH] Session data:`, JSON.stringify(req.session, null, 2));
+
     if (!req.session?.userId) {
+      console.warn(`[AUTH] generateCode failed: No userId in session. Session dump:`, req.session);
       return res.status(401).json({ message: "Not authenticated" });
     }
+    
     const user = await storage.getUser(req.session.userId);
     if (!user) {
-      console.log("User not found for ID:", req.session.userId);
+      console.warn(`[AUTH] generateCode failed: User not found for ID ${req.session.userId}`);
       return res.status(401).json({ message: "User not found" });
     }
+
     try {
+      console.log(`[AUTH] Generating code for user: ${user.username} (ID: ${user.id})`);
       const code = await storage.generateAuthCode(user.id, user.username);
+      console.log(`[AUTH] Code generated successfully: ${code}`);
       res.status(200).json({ code });
     } catch (err) {
-      console.error("Route error generating code:", err);
+      console.error("[AUTH] Route error generating code:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });
