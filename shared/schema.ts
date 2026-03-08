@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, jsonb } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -14,6 +14,13 @@ export const users = pgTable("users", {
   kills: integer("kills").default(0),
   deaths: integer("deaths").default(0),
   minecraftUuid: text("minecraft_uuid"), // For verified linking
+});
+
+// Добавляем таблицу сессий в схему, чтобы Drizzle не удалял её при синхронизации
+export const session = pgTable("session", {
+  sid: text("sid").primaryKey(),
+  sess: jsonb("sess").notNull(),
+  expire: timestamp("expire", { precision: 6 }).notNull(),
 });
 
 export const clans = pgTable("clans", {
