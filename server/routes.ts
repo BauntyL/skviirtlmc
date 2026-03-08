@@ -387,6 +387,37 @@ export async function registerRoutes(
     res.status(200).json(reports);
   });
 
+  app.patch(api.grief.updateStatus.path, async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const user = await storage.getUser(req.session.userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can update report status" });
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const { status } = api.grief.updateStatus.input.parse(req.body);
+
+      const updated = await storage.updateGriefReportStatus(id, status);
+      if (!updated) {
+        return res.status(404).json({ message: "Report not found" });
+      }
+
+      res.status(200).json({ success: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   return httpServer;
 }
 

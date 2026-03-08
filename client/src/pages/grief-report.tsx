@@ -10,7 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { insertGriefReportSchema } from "@shared/schema";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api, buildUrl } from "@shared/routes";
-import { AlertCircle, CheckCircle2, Clock, MapPin, ShieldAlert, History } from "lucide-react";
+import { AlertCircle, CheckCircle2, Clock, MapPin, ShieldAlert, History, User as UserIcon, Check, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
@@ -51,7 +51,29 @@ export default function GriefReport() {
     }
   }, [user, form]);
 
-  const mutation = useMutation({
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number, status: string }) => {
+      const res = await fetch(buildUrl(api.grief.updateStatus.path, { id }), {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Ошибка при обновлении статуса");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Успех", description: "Статус заявки обновлен" });
+      refetch();
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const createMutation = useMutation({
     mutationFn: async (data: any) => {
       const res = await fetch(api.grief.create.path, {
         method: "POST",
@@ -166,7 +188,7 @@ export default function GriefReport() {
               <CardTitle className="text-xl text-white">Подать жалобу</CardTitle>
             </CardHeader>
             <CardContent>
-              <form onSubmit={form.handleSubmit((data) => mutation.mutate(data))} className="space-y-6">
+              <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label htmlFor="coordinates" className="text-zinc-400">Координаты (X, Y, Z)</Label>
@@ -214,10 +236,10 @@ export default function GriefReport() {
 
                 <Button 
                   type="submit" 
-                  disabled={mutation.isPending}
+                  disabled={createMutation.isPending}
                   className="w-full bg-primary text-black font-bold h-12 text-lg hover:scale-[1.02] transition-transform"
                 >
-                  {mutation.isPending ? "Отправка..." : "Отправить заявку"}
+                  {createMutation.isPending ? "Отправка..." : "Отправить заявку"}
                 </Button>
               </form>
             </CardContent>
@@ -261,9 +283,40 @@ export default function GriefReport() {
                         <MapPin className="w-3 h-3 text-primary" />
                         {report.coordinates}
                       </div>
-                      <p className="text-xs text-zinc-400 line-clamp-2 italic">
+                      
+                      {user.role === "admin" && (
+                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 mb-2">
+                          <UserIcon className="w-3 h-3" />
+                          {report.username}
+                        </div>
+                      )}
+
+                      <p className="text-xs text-zinc-400 line-clamp-2 italic mb-3">
                         "{report.description || 'Без описания'}"
                       </p>
+
+                      {user.role === "admin" && report.status === "pending" && (
+                        <div className="flex gap-2 mt-2">
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 px-2 text-[10px] bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white"
+                            onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'resolved' })}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <Check className="w-3 h-3 mr-1" /> Решить
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 px-2 text-[10px] bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white"
+                            onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'rejected' })}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <X className="w-3 h-3 mr-1" /> Отклонить
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

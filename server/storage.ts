@@ -21,6 +21,7 @@ export interface IStorage {
   // Grief Reports
   createGriefReport(report: InsertGriefReport): Promise<GriefReport>;
   getGriefReports(userId?: number): Promise<GriefReport[]>;
+  updateGriefReportStatus(id: number, status: string): Promise<GriefReport | undefined>;
   
   sessionStore: session.Store;
 }
@@ -116,6 +117,14 @@ export class DatabaseStorage implements IStorage {
       return await db.select().from(griefReports).where(eq(griefReports.userId, userId)).orderBy(desc(griefReports.id));
     }
     return await db.select().from(griefReports).orderBy(desc(griefReports.id));
+  }
+
+  async updateGriefReportStatus(id: number, status: string): Promise<GriefReport | undefined> {
+    const [updated] = await db.update(griefReports)
+      .set({ status })
+      .where(eq(griefReports.id, id))
+      .returning();
+    return updated;
   }
 }
 

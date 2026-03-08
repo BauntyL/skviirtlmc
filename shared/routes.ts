@@ -110,6 +110,18 @@ export const api = {
         401: errorSchemas.unauthorized,
       },
     },
+    updateStatus: {
+      method: 'PATCH' as const,
+      path: '/api/grief-reports/:id/status' as const,
+      input: z.object({ status: z.enum(['pending', 'in_progress', 'resolved', 'rejected']) }),
+      responses: {
+        200: z.object({ success: z.boolean() }),
+        400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+        403: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
   },
 };
 
