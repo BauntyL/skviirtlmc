@@ -13,7 +13,9 @@ import { api, buildUrl } from "@shared/routes";
 import { AlertCircle, CheckCircle2, Clock, MapPin, ShieldAlert, History, User as UserIcon, Check, X, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Search, Filter, ArrowUpDown } from "lucide-react";
 
 export default function GriefReport() {
   const { data: user, isLoading } = useAuth();
@@ -111,6 +113,8 @@ export default function GriefReport() {
     },
   });
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -160,6 +164,13 @@ export default function GriefReport() {
     );
   }
 
+  const filteredReports = reports?.filter((report: any) => {
+    const matchesSearch = report.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         report.coordinates.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (report.description && report.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesSearch;
+  });
+
   return (
     <div className="min-h-screen w-full bg-background pb-20">
       <div className="relative py-20 overflow-hidden">
@@ -169,162 +180,246 @@ export default function GriefReport() {
         
         <div className="max-w-4xl mx-auto px-4 relative z-10 text-center">
           <Badge variant="outline" className="mb-4 border-red-500/20 text-red-500 px-4 py-1 rounded-full bg-red-500/5 font-bold uppercase tracking-widest text-xs">
-            Помощь игрокам
+            {user.role === 'admin' ? "Панель управления" : "Помощь игрокам"}
           </Badge>
           <h1 className="text-4xl md:text-6xl font-display font-bold text-white mb-6 tracking-tight">
-            Меня <span className="text-red-500">Загриферили</span>
+            {user.role === 'admin' ? "Управление" : "Меня"} <span className="text-red-500">{user.role === 'admin' ? "Жалобами" : "Загриферили"}</span>
           </h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
-            Обнаружили повреждения вашей постройки? Оставьте заявку, и наши модераторы помогут восстановить её и наказать виновных.
+            {user.role === 'admin' 
+              ? "Рассматривайте заявки, восстанавливайте постройки и следите за порядком на сервере." 
+              : "Обнаружили повреждения вашей постройки? Оставьте заявку, и наши модераторы помогут восстановить её и наказать виновных."}
           </p>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Form Column */}
-        <div className="lg:col-span-2">
-          <Card className="bg-white/5 border-white/10 backdrop-blur-sm border-none shadow-2xl">
-            <CardHeader>
-              <CardTitle className="text-xl text-white">Подать жалобу</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={form.handleSubmit((data) => createMutation.mutate(data))} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label htmlFor="coordinates" className="text-zinc-400">Координаты (X, Y, Z)</Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-3 w-4 h-4 text-primary opacity-50" />
-                      <Input 
-                        id="coordinates" 
-                        placeholder="Напр: 1500, 64, -2300" 
-                        className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
-                        {...form.register("coordinates")}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="time" className="text-zinc-400">Примерное время</Label>
-                    <div className="relative">
-                      <Clock className="absolute left-3 top-3 w-4 h-4 text-primary opacity-50" />
-                      <Input 
-                        id="time" 
-                        placeholder="Напр: Сегодня в 14:00" 
-                        className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
-                        {...form.register("time")}
-                      />
-                    </div>
-                  </div>
-                </div>
+      <div className="max-w-7xl mx-auto px-4">
+        {user.role === "admin" ? (
+          <div className="space-y-8">
+            {/* Admin Console */}
+            <Tabs defaultValue="all" className="w-full">
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <TabsList className="bg-white/5 border border-white/10 p-1 rounded-xl">
+                  <TabsTrigger value="all" className="rounded-lg px-6">Все ({reports?.length || 0})</TabsTrigger>
+                  <TabsTrigger value="pending" className="rounded-lg px-6">Новые ({reports?.filter((r: any) => r.status === 'pending').length || 0})</TabsTrigger>
+                  <TabsTrigger value="resolved" className="rounded-lg px-6">Решенные</TabsTrigger>
+                  <TabsTrigger value="rejected" className="rounded-lg px-6">Отклоненные</TabsTrigger>
+                </TabsList>
 
-                <div className="space-y-2">
-                  <Label htmlFor="description" className="text-zinc-400">Что именно произошло?</Label>
-                  <Textarea 
-                    id="description" 
-                    placeholder="Опишите масштаб повреждений или пропавшие предметы..." 
-                    className="min-h-[120px] bg-white/5 border-white/10 focus:border-primary/50"
-                    {...form.register("description")}
+                <div className="relative w-full md:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                  <Input 
+                    placeholder="Поиск по нику или коордам..." 
+                    className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-
-                <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
-                  <p className="text-xs text-muted-foreground">
-                    <span className="text-primary font-bold mr-1">Внимание:</span> 
-                    Ложные вызовы могут привести к временной блокировке возможности подавать жалобы. 
-                    Убедитесь, что территория действительно была загриферена, а не повреждена вашими друзьями.
-                  </p>
-                </div>
-
-                <Button 
-                  type="submit" 
-                  disabled={createMutation.isPending}
-                  className="w-full bg-primary text-black font-bold h-12 text-lg hover:scale-[1.02] transition-transform"
-                >
-                  {createMutation.isPending ? "Отправка..." : "Отправить заявку"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* History Column */}
-        <div className="lg:col-span-1">
-          <Card className="bg-white/5 border-white/10 backdrop-blur-sm border-none shadow-2xl h-full">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <CardTitle className="text-xl text-white flex items-center gap-2">
-                <History className="w-5 h-5 text-primary" /> История
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {!reports || reports.length === 0 ? (
-                  <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-2xl">
-                    <p className="text-muted-foreground text-sm italic">У вас пока нет активных жалоб</p>
-                  </div>
-                ) : (
-                  reports.map((report: any) => (
-                    <div key={report.id} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge 
-                          variant="secondary" 
-                          className={
-                            report.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
-                            report.status === 'resolved' ? 'bg-green-500/10 text-green-500' :
-                            'bg-red-500/10 text-red-500'
-                          }
-                        >
-                          {report.status === 'pending' ? 'В очереди' :
-                           report.status === 'resolved' ? 'Решено' : 'Отклонено'}
-                        </Badge>
-                        <span className="text-[10px] text-zinc-500 font-mono">
-                          #{report.id}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs text-white mb-1">
-                        <MapPin className="w-3 h-3 text-primary" />
-                        {report.coordinates}
-                      </div>
-                      
-                      {user.role === "admin" && (
-                        <div className="flex items-center gap-2 text-[10px] text-zinc-500 mb-2">
-                          <UserIcon className="w-3 h-3" />
-                          {report.username}
-                        </div>
-                      )}
-
-                      <p className="text-xs text-zinc-400 line-clamp-2 italic mb-3">
-                        "{report.description || 'Без описания'}"
-                      </p>
-
-                      {user.role === "admin" && report.status === "pending" && (
-                        <div className="flex gap-2 mt-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-7 px-2 text-[10px] bg-green-500/10 border-green-500/20 text-green-500 hover:bg-green-500 hover:text-white"
-                            onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'resolved' })}
-                            disabled={updateStatusMutation.isPending}
-                          >
-                            <Check className="w-3 h-3 mr-1" /> Решить
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            variant="outline" 
-                            className="h-7 px-2 text-[10px] bg-red-500/10 border-red-500/20 text-red-500 hover:bg-red-500 hover:text-white"
-                            onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'rejected' })}
-                            disabled={updateStatusMutation.isPending}
-                          >
-                            <X className="w-3 h-3 mr-1" /> Отклонить
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+
+              {["all", "pending", "resolved", "rejected"].map((status) => (
+                <TabsContent key={status} value={status} className="mt-0">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {filteredReports?.filter((r: any) => status === 'all' || r.status === status).map((report: any) => (
+                      <Card key={report.id} className="bg-white/5 border-white/10 hover:bg-white/[0.07] transition-all duration-300 group overflow-hidden border-none shadow-xl">
+                        <CardHeader className="pb-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <Badge 
+                              variant="secondary" 
+                              className={
+                                report.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                                report.status === 'resolved' ? 'bg-green-500/10 text-green-500' :
+                                'bg-red-500/10 text-red-500'
+                              }
+                            >
+                              {report.status === 'pending' ? 'В очереди' :
+                               report.status === 'resolved' ? 'Решено' : 'Отклонено'}
+                            </Badge>
+                            <span className="text-[10px] text-zinc-500 font-mono">#{report.id}</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-white font-bold text-lg mb-1">
+                            <UserIcon className="w-4 h-4 text-primary" />
+                            {report.username}
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-zinc-400">
+                            <MapPin className="w-3 h-3 text-red-500" />
+                            {report.coordinates}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            <div className="p-3 rounded-lg bg-black/20 text-xs text-zinc-300 leading-relaxed border border-white/5 italic">
+                              "{report.description || 'Описание отсутствует'}"
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-zinc-500">
+                              <Clock className="w-3 h-3" />
+                              Указанное время: {report.time}
+                            </div>
+                            
+                            {report.status === 'pending' && (
+                              <div className="flex gap-2 pt-2 border-t border-white/5">
+                                <Button 
+                                  className="flex-1 bg-green-500 text-white hover:bg-green-600 font-bold h-9"
+                                  onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'resolved' })}
+                                  disabled={updateStatusMutation.isPending}
+                                >
+                                  <Check className="w-4 h-4 mr-1" /> Решить
+                                </Button>
+                                <Button 
+                                  variant="destructive"
+                                  className="flex-1 font-bold h-9"
+                                  onClick={() => updateStatusMutation.mutate({ id: report.id, status: 'rejected' })}
+                                  disabled={updateStatusMutation.isPending}
+                                >
+                                  <X className="w-4 h-4 mr-1" /> Отказать
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  
+                  {(!filteredReports || filteredReports.filter((r: any) => status === 'all' || r.status === status).length === 0) && (
+                    <div className="text-center py-20 bg-white/5 rounded-3xl border border-dashed border-white/10">
+                      <ShieldAlert className="w-12 h-12 text-zinc-700 mx-auto mb-4" />
+                      <p className="text-zinc-500 font-medium">Ничего не найдено</p>
+                    </div>
+                  )}
+                </TabsContent>
+              ))}
+            </Tabs>
+
+            {/* Form for Admin too */}
+            <div className="pt-12 border-t border-white/10">
+               <h2 className="text-2xl font-bold text-white mb-6 text-center">Создать новую заявку</h2>
+               <div className="max-w-3xl mx-auto">
+                  <GriefForm form={form} createMutation={createMutation} />
+               </div>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="lg:col-span-2">
+              <Card className="bg-white/5 border-white/10 backdrop-blur-sm border-none shadow-2xl">
+                <CardHeader>
+                  <CardTitle className="text-xl text-white">Подать жалобу</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <GriefForm form={form} createMutation={createMutation} />
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="lg:col-span-1">
+              <Card className="bg-white/5 border-white/10 backdrop-blur-sm border-none shadow-2xl h-full">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                  <CardTitle className="text-xl text-white flex items-center gap-2">
+                    <History className="w-5 h-5 text-primary" /> Мои жалобы
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {!reports || reports.length === 0 ? (
+                      <div className="text-center py-12 border-2 border-dashed border-white/5 rounded-2xl">
+                        <p className="text-muted-foreground text-sm italic">У вас пока нет активных жалоб</p>
+                      </div>
+                    ) : (
+                      reports.map((report: any) => (
+                        <div key={report.id} className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-colors">
+                          <div className="flex justify-between items-start mb-2">
+                            <Badge 
+                              variant="secondary" 
+                              className={
+                                report.status === 'pending' ? 'bg-amber-500/10 text-amber-500' :
+                                report.status === 'resolved' ? 'bg-green-500/10 text-green-500' :
+                                'bg-red-500/10 text-red-500'
+                              }
+                            >
+                              {report.status === 'pending' ? 'В очереди' :
+                               report.status === 'resolved' ? 'Решено' : 'Отклонено'}
+                            </Badge>
+                            <span className="text-[10px] text-zinc-500 font-mono">
+                              #{report.id}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-xs text-white mb-1">
+                            <MapPin className="w-3 h-3 text-primary" />
+                            {report.coordinates}
+                          </div>
+                          <p className="text-xs text-zinc-400 line-clamp-2 italic">
+                            "{report.description || 'Без описания'}"
+                          </p>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function GriefForm({ form, createMutation }: { form: any, createMutation: any }) {
+  return (
+    <form onSubmit={form.handleSubmit((data: any) => createMutation.mutate(data))} className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label htmlFor="coordinates" className="text-zinc-400">Координаты (X, Y, Z)</Label>
+          <div className="relative">
+            <MapPin className="absolute left-3 top-3 w-4 h-4 text-primary opacity-50" />
+            <Input 
+              id="coordinates" 
+              placeholder="Напр: 1500, 64, -2300" 
+              className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
+              {...form.register("coordinates")}
+            />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="time" className="text-zinc-400">Примерное время</Label>
+          <div className="relative">
+            <Clock className="absolute left-3 top-3 w-4 h-4 text-primary opacity-50" />
+            <Input 
+              id="time" 
+              placeholder="Напр: Сегодня в 14:00" 
+              className="pl-10 bg-white/5 border-white/10 focus:border-primary/50"
+              {...form.register("time")}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description" className="text-zinc-400">Что именно произошло?</Label>
+        <Textarea 
+          id="description" 
+          placeholder="Опишите масштаб повреждений или пропавшие предметы..." 
+          className="min-h-[120px] bg-white/5 border-white/10 focus:border-primary/50"
+          {...form.register("description")}
+        />
+      </div>
+
+      <div className="p-4 rounded-xl bg-primary/5 border border-primary/10">
+        <p className="text-xs text-muted-foreground">
+          <span className="text-primary font-bold mr-1">Внимание:</span> 
+          Ложные вызовы могут привести к временной блокировке возможности подавать жалобы. 
+          Убедитесь, что территория действительно была загриферена, а не повреждена вашими друзьями.
+        </p>
+      </div>
+
+      <Button 
+        type="submit" 
+        disabled={createMutation.isPending}
+        className="w-full bg-primary text-black font-bold h-12 text-lg hover:scale-[1.02] transition-transform"
+      >
+        {createMutation.isPending ? "Отправка..." : "Отправить заявку"}
+      </Button>
+    </form>
   );
 }
