@@ -79,8 +79,9 @@ export default function Rules() {
                       <div className="space-y-4">
                         <p>На сервере установлена система каналов Venture Chat для удобства общения:</p>
                         <ul className="list-disc list-inside space-y-1">
-                          <li><span className="text-white font-bold">Локальный чат [L]</span> — радиус 100 блоков. Просто пишите сообщение в чат.</li>
-                          <li><span className="text-white font-bold">Глобальный чат [G]</span> — виден всем. Используйте префикс <span className="text-primary font-bold">!</span> перед сообщением (напр. <span className="text-zinc-300">!Всем привет</span>).</li>
+                          <li><span className="text-white font-bold">Глобальный чат [G]</span> — <span className="text-primary font-bold">/g &lt;текст&gt;</span>. Сообщение видно всем игрокам на сервере.</li>
+                          <li><span className="text-white font-bold">Локальный чат [L]</span> — <span className="text-primary font-bold">/l &lt;текст&gt;</span>. Сообщение видно игрокам в радиусе 100 блоков.</li>
+                          <li><span className="text-white font-bold">Торговый чат [T]</span> — <span className="text-primary font-bold">/t &lt;текст&gt;</span>. Специальный канал для торговых объявлений.</li>
                           <li><span className="text-white font-bold">Личные сообщения</span> — <span className="text-primary font-bold">/msg &lt;ник&gt; &lt;текст&gt;</span>. Ответ на последнее сообщение — <span className="text-primary font-bold">/r &lt;текст&gt;</span>.</li>
                         </ul>
                         <p>Запрещены оскорбления, флуд, спам, реклама сторонних ресурсов и разжигание ненависти. Уважайте друг друга.</p>
