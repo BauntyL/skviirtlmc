@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, clans, authCodes, type User, type InsertUser, type Clan, type InsertClan } from "@shared/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { users, clans, authCodes, griefReports, type User, type InsertUser, type Clan, type InsertClan, type GriefReport, type InsertGriefReport } from "@shared/schema";
+import { eq, and, gt, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -17,6 +17,11 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   generateAuthCode(userId: number, username: string): Promise<string>;
   verifyAuthCode(username: string, code: string): Promise<boolean>;
+  
+  // Grief Reports
+  createGriefReport(report: InsertGriefReport): Promise<GriefReport>;
+  getGriefReports(userId?: number): Promise<GriefReport[]>;
+  
   sessionStore: session.Store;
 }
 
@@ -95,6 +100,22 @@ export class DatabaseStorage implements IStorage {
     // Удаляем использованный код
     await db.delete(authCodes).where(eq(authCodes.id, found.id));
     return true;
+  }
+
+  async createGriefReport(report: InsertGriefReport): Promise<GriefReport> {
+    const [newReport] = await db.insert(griefReports).values({
+      ...report,
+      createdAt: new Date().toISOString(),
+      status: "pending"
+    }).returning();
+    return newReport;
+  }
+
+  async getGriefReports(userId?: number): Promise<GriefReport[]> {
+    if (userId) {
+      return await db.select().from(griefReports).where(eq(griefReports.userId, userId)).orderBy(desc(griefReports.id));
+    }
+    return await db.select().from(griefReports).orderBy(desc(griefReports.id));
   }
 }
 

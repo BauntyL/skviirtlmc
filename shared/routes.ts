@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { insertUserSchema, users, clans } from "./schema";
+import { insertUserSchema, users, clans, insertGriefReportSchema } from "./schema";
 
 export const errorSchemas = {
   validation: z.object({ message: z.string(), field: z.string().optional() }),
@@ -88,6 +88,26 @@ export const api = {
       responses: {
         200: userWithoutPassword,
         404: errorSchemas.notFound,
+      },
+    },
+  },
+  grief: {
+    create: {
+      method: 'POST' as const,
+      path: '/api/grief-reports' as const,
+      input: insertGriefReportSchema,
+      responses: {
+        201: z.object({ success: z.boolean(), id: z.number() }),
+        400: errorSchemas.validation,
+        401: errorSchemas.unauthorized,
+      },
+    },
+    list: {
+      method: 'GET' as const,
+      path: '/api/grief-reports' as const,
+      responses: {
+        200: z.array(z.any()), // GriefReport[]
+        401: errorSchemas.unauthorized,
       },
     },
   },

@@ -21,6 +21,7 @@ import Guides from "@/pages/guides";
 import Events from "@/pages/events";
 import Players from "@/pages/players";
 import Profile from "@/pages/profile";
+import GriefReport from "@/pages/grief-report";
 
 function Router() {
   return (
@@ -35,6 +36,7 @@ function Router() {
         <Route path="/player/:username" component={Profile} />
         <Route path="/clans" component={Clans} />
         <Route path="/map" component={Map} />
+        <Route path="/grief-report" component={GriefReport} />
         <Route path="/store" component={Store} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/dashboard" component={Dashboard} />

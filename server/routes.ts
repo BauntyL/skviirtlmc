@@ -329,6 +329,58 @@ export async function registerRoutes(
     }
   });
 
+  // Grief Reports API
+  app.post(api.grief.create.path, async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    
+    const user = await storage.getUser(req.session.userId);
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
+
+    if (!user.minecraftUuid) {
+      return res.status(403).json({ 
+        message: "Аккаунт должен быть привязан к Minecraft для подачи жалобы (/link в игре)." 
+      });
+    }
+
+    try {
+      const input = api.grief.create.input.parse(req.body);
+      
+      // Ensure the report is for the current user
+      if (input.userId !== user.id || input.username !== user.username || input.minecraftUuid !== user.minecraftUuid) {
+        return res.status(400).json({ message: "Invalid user data in report" });
+      }
+
+      const report = await storage.createGriefReport(input);
+      res.status(201).json({ success: true, id: report.id });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get(api.grief.list.path, async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const user = await storage.getUser(req.session.userId);
+    if (!user) return res.status(401).json({ message: "User not found" });
+
+    // Users can only see their own reports, admins see all
+    const userIdFilter = user.role === "admin" ? undefined : user.id;
+    const reports = await storage.getGriefReports(userIdFilter);
+    res.status(200).json(reports);
+  });
+
   return httpServer;
 }
 

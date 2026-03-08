@@ -34,6 +34,27 @@ export const serverStats = pgTable("server_stats", {
   lastUpdated: text("last_updated"), // ISO string
 });
 
+export const griefReports = pgTable("grief_reports", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  username: text("username").notNull(),
+  minecraftUuid: text("minecraft_uuid").notNull(),
+  coordinates: text("coordinates").notNull(),
+  time: text("time").notNull(),
+  description: text("description"),
+  status: text("status").default("pending").notNull(), // pending, in_progress, resolved, rejected
+  createdAt: text("created_at").notNull(), // ISO string
+});
+
+export const insertGriefReportSchema = createInsertSchema(griefReports).omit({ 
+  id: true,
+  createdAt: true,
+  status: true 
+});
+
+export type GriefReport = typeof griefReports.$inferSelect;
+export type InsertGriefReport = z.infer<typeof insertGriefReportSchema>;
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,

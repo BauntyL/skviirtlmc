@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useAuth, useLogout } from "@/hooks/use-auth";
-import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home, Flower2 } from "lucide-react";
+import { Gamepad2, Menu, X, LogOut, User as UserIcon, ChevronDown, Info, Users, Map as MapIcon, Home, Flower2, ShieldAlert } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -21,6 +21,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const communityLinks = [
     { href: "/players", label: "Игроки" },
     { href: "/clans", label: "Кланы" },
+    { href: "/grief-report", label: "Жалоба на гриф" },
   ];
 
   const isInfoActive = infoLinks.some(link => location === link.href);
