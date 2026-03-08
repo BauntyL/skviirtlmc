@@ -80,6 +80,7 @@ export default function GriefReport() {
       refetch();
     },
     onError: (error: Error) => {
+      console.error("Grief report submission error:", error);
       toast({
         title: "Ошибка",
         description: error.message,

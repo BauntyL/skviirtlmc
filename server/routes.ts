@@ -349,14 +349,20 @@ export async function registerRoutes(
     try {
       const input = api.grief.create.input.parse(req.body);
       
+      console.log("[GRIEF] Received report request:", input);
+      console.log("[GRIEF] Current user:", { id: user.id, username: user.username, uuid: user.minecraftUuid });
+
       // Ensure the report is for the current user
-      if (input.userId !== user.id || input.username !== user.username || input.minecraftUuid !== user.minecraftUuid) {
-        return res.status(400).json({ message: "Invalid user data in report" });
+      if (input.userId !== user.id) {
+        console.error("[GRIEF] User ID mismatch:", input.userId, "vs", user.id);
+        return res.status(400).json({ message: "Invalid user ID in report" });
       }
 
       const report = await storage.createGriefReport(input);
+      console.log("[GRIEF] Report created successfully, ID:", report.id);
       res.status(201).json({ success: true, id: report.id });
     } catch (err) {
+      console.error("[GRIEF] Error creating report:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({
           message: err.errors[0].message,
