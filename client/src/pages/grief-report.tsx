@@ -13,9 +13,10 @@ import { api, buildUrl } from "@shared/routes";
 import { AlertCircle, CheckCircle2, Clock, MapPin, ShieldAlert, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
+import { useEffect } from "react";
 
 export default function GriefReport() {
-  const { user } = useAuth();
+  const { data: user, isLoading } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
@@ -35,6 +36,20 @@ export default function GriefReport() {
       description: "",
     },
   });
+
+  // Обновляем форму, когда данные пользователя загружены
+  useEffect(() => {
+    if (user) {
+      form.reset({
+        userId: user.id,
+        username: user.username,
+        minecraftUuid: user.minecraftUuid || "",
+        coordinates: form.getValues("coordinates"),
+        time: form.getValues("time"),
+        description: form.getValues("description"),
+      });
+    }
+  }, [user, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
@@ -72,6 +87,14 @@ export default function GriefReport() {
       });
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   if (!user) {
     return (
