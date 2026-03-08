@@ -1,4 +1,4 @@
-import { Download, Play, PlusSquare, ArrowRight } from "lucide-react";
+import { Download, Play, PlusSquare, ArrowRight, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +43,11 @@ export default function Start() {
       icon: ArrowRight,
       title: "4. Регистрация в игре",
       desc: "После подключения введите /register <пароль> в чат для защиты аккаунта. Затем /login <пароль> при входе.",
+    },
+    {
+      icon: MessageSquare,
+      title: "5. Начинайте Общение",
+      desc: "Для локального чата (100 блоков) просто пишите в чат. Для глобального — используйте префикс '!' перед текстом.",
     }
   ];
 

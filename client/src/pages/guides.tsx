@@ -1,10 +1,19 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Play, BookOpen, Mic, Shield, ExternalLink, Download, Users } from "lucide-react";
+import { Play, BookOpen, Mic, Shield, ExternalLink, Download, Users, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Guides() {
   const guides = [
+    {
+      title: "Чат и Общение",
+      category: "Основы",
+      icon: MessageSquare,
+      description: "На сервере разделены Локальный и Глобальный чаты. Локальный чат [L] работает в радиусе 100 блоков (просто пишите в чат). Глобальный чат [G] виден всем, используйте префикс '!' перед сообщением (например, !Всем привет) или команду /g <текст>.",
+      links: [
+        { label: "Правила чата", url: "/rules" }
+      ]
+    },
     {
       title: "Приват территории",
       category: "Основы",
@@ -39,6 +48,15 @@ export default function Guides() {
       description: "Объединяйтесь в команды с друзьями! Используйте /team create <название> для создания клана. Командный банк, общая точка дома и дипломатия помогут вам стать сильнейшей фракцией сервера.",
       links: [
         { label: "Список команд", url: "/clans" }
+      ]
+    },
+    {
+      title: "Полезные команды",
+      category: "Основы",
+      icon: BookOpen,
+      description: "/spawn — вернуться на спавн, /sethome — поставить точку дома, /home — телепортироваться домой, /tpa <ник> — отправить запрос на телепортацию к игроку, /money — проверить свой баланс.",
+      links: [
+        { label: "Все правила", url: "/rules" }
       ]
     }
   ];

@@ -74,11 +74,18 @@ export default function Rules() {
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-3" className="border-white/10 px-6">
-                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.3. Поведение в чате</AccordionTrigger>
+                    <AccordionTrigger className="text-white hover:text-primary py-6 text-left">1.3. Поведение и система чата</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground pb-6">
-                      Запрещены оскорбления, флуд, спам, реклама сторонних ресурсов и разжигание ненависти. Уважайте друг друга. Запрещена продажа игровых ресурсов за реальные деньги (кроме официального доната).
-                      <br /><br />
-                      <span className="text-red-400 font-bold">Наказание:</span> Мут от 1 часа до бана на неделю.
+                      <div className="space-y-4">
+                        <p>На сервере установлена система каналов Venture Chat для удобства общения:</p>
+                        <ul className="list-disc list-inside space-y-1">
+                          <li><span className="text-white font-bold">Локальный чат [L]</span> — радиус 100 блоков. Просто пишите сообщение в чат.</li>
+                          <li><span className="text-white font-bold">Глобальный чат [G]</span> — виден всем. Используйте префикс <span className="text-primary font-bold">!</span> перед сообщением (напр. <span className="text-zinc-300">!Всем привет</span>).</li>
+                          <li><span className="text-white font-bold">Личные сообщения</span> — <span className="text-primary font-bold">/msg &lt;ник&gt; &lt;текст&gt;</span>. Ответ на последнее сообщение — <span className="text-primary font-bold">/r &lt;текст&gt;</span>.</li>
+                        </ul>
+                        <p>Запрещены оскорбления, флуд, спам, реклама сторонних ресурсов и разжигание ненависти. Уважайте друг друга.</p>
+                        <p><span className="text-red-400 font-bold">Наказание:</span> Мут от 1 часа до бана на неделю.</p>
+                      </div>
                     </AccordionContent>
                   </AccordionItem>
                   <AccordionItem value="item-4" className="border-white/10 px-6">
