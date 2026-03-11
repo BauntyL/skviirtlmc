@@ -6,8 +6,8 @@ export default function Events() {
   const events = [
     {
       title: "Весеннее приключение (8 Марта)",
-      status: "Активен",
-      endDate: "10.03.2026 00:00",
+      status: "Завершен",
+      endDate: "",
       description: "В честь международного женского дня на сервере проходит особый ивент! Собирайте Весенние цветы и обменивайте их на ценные награды у специального торговца.",
       image: "/merchant.png",
       location: "Спавн сервера",
@@ -56,9 +56,7 @@ export default function Events() {
                   <Badge className="bg-emerald-500 text-white border-none px-3 py-1 font-bold">
                     {event.status}
                   </Badge>
-                  <Badge variant="outline" className="bg-black/40 backdrop-blur-md border-white/20 text-white flex items-center gap-1">
-                    <Timer className="w-3 h-3" /> До {event.endDate}
-                  </Badge>
+
                 </div>
               </div>
 
@@ -101,13 +99,7 @@ export default function Events() {
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-center gap-4">
-                  <Calendar className="w-5 h-5 text-primary" />
-                  <div>
-                    <span className="text-[10px] text-primary uppercase font-bold tracking-widest block">Окончание</span>
-                    <span className="text-white font-mono font-bold">{event.endDate}</span>
-                  </div>
-                </div>
+
               </div>
             </div>
           </Card>
