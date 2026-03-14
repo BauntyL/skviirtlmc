@@ -149,6 +149,39 @@ export class DatabaseStorage implements IStorage {
       .set(match)
       .where(eq(tournamentMatches.id, id))
       .returning();
+    
+    if (!updated) return undefined;
+
+    // Automatic promotion logic for a 4-team tournament
+    // Round 1 (Semi-finals): Pos 0 and Pos 1
+    // Round 2 (Final): Pos 0
+    if (updated.round === 1 && updated.winner !== null && updated.status === 'completed') {
+      const winnerName = updated.winner === 1 ? updated.player1 : updated.player2;
+      
+      if (winnerName) {
+        // Find the final match (Round 2, Position 0)
+        const [finalMatch] = await db.select().from(tournamentMatches)
+          .where(and(eq(tournamentMatches.round, 2), eq(tournamentMatches.position, 0)));
+        
+        if (finalMatch) {
+          // If the semi-final was position 0, winner goes to player1 of final.
+          // If the semi-final was position 1, winner goes to player2 of final.
+          const updateData: any = {};
+          if (updated.position === 0) {
+            updateData.player1 = winnerName;
+          } else if (updated.position === 1) {
+            updateData.player2 = winnerName;
+          }
+
+          if (Object.keys(updateData).length > 0) {
+            await db.update(tournamentMatches)
+              .set(updateData)
+              .where(eq(tournamentMatches.id, finalMatch.id));
+          }
+        }
+      }
+    }
+
     return updated;
   }
 
