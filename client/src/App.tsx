@@ -22,6 +22,7 @@ import Events from "@/pages/events";
 import Players from "@/pages/players";
 import Profile from "@/pages/profile";
 import GriefReport from "@/pages/grief-report";
+import TournamentBracket from "@/pages/tournament-bracket";
 
 function Router() {
   return (
@@ -32,6 +33,7 @@ function Router() {
         <Route path="/rules" component={Rules} />
         <Route path="/guides" component={Guides} />
         <Route path="/events" component={Events} />
+        <Route path="/tournament-bracket" component={TournamentBracket} />
         <Route path="/players" component={Players} />
         <Route path="/player/:username" component={Profile} />
         <Route path="/clans" component={Clans} />

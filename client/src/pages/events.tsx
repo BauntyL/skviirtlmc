@@ -3,9 +3,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Gift, Timer, Flower2, Trophy, ExternalLink } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
 
 export default function Events() {
   const { data: user } = useAuth();
+  const [, setLocation] = useLocation();
   
   // Calculate tomorrow's date for the duel tournament
   const tomorrow = new Date();
@@ -26,7 +28,7 @@ export default function Events() {
         "Все участники получат поощрительные призы",
         "Регистрация на спавне за 15 минут до начала"
       ],
-      bracketUrl: "https://challonge.com/", // Ссылка на сетку
+      bracketUrl: "/tournament-bracket", // Ссылка на внутреннюю страницу
       adminOnly: true,
       icon: <Trophy className="w-6 h-6 text-yellow-400" />
     },
@@ -138,11 +140,17 @@ export default function Events() {
                   <Button 
                     variant="outline" 
                     className="w-full lg:w-fit bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary font-bold py-6 rounded-xl transition-all hover:scale-105 group"
-                    onClick={() => window.open(event.bracketUrl, '_blank')}
+                    onClick={() => {
+                      if (event.bracketUrl?.startsWith('http')) {
+                        window.open(event.bracketUrl, '_blank');
+                      } else {
+                        setLocation(event.bracketUrl || "/events");
+                      }
+                    }}
                   >
                     <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
                     Турнирная сетка
-                    <ExternalLink className="w-4 h-4 ml-2 opacity-50" />
+                    {event.bracketUrl.startsWith('http') && <ExternalLink className="w-4 h-4 ml-2 opacity-50" />}
                   </Button>
                 )}
               </div>
