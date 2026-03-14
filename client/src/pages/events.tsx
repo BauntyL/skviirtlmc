@@ -1,9 +1,35 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Gift, Timer, Flower2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, MapPin, Gift, Timer, Flower2, Trophy, ExternalLink } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Events() {
+  const { data: user } = useAuth();
+  
+  // Calculate tomorrow's date for the duel tournament
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowFormatted = tomorrow.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+
   const events = [
+    {
+      title: "Турнир по дуэлям",
+      status: "Скоро",
+      endDate: tomorrowFormatted,
+      description: "Присоединяйтесь к нашему грандиозному турниру по дуэлям! Докажите свое мастерство владения мечом и луком в честных поединках один на один. Победителей ждут легендарные награды!",
+      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1000",
+      location: "Арена для ивентов (/warp event_arena)",
+      features: [
+        "Турнирная сетка на вылет",
+        "Главный приз: Уникальный титул и набор брони",
+        "Все участники получат поощрительные призы",
+        "Регистрация на спавне за 15 минут до начала"
+      ],
+      bracketUrl: "https://challonge.com/", // Ссылка на сетку
+      adminOnly: true,
+      icon: <Trophy className="w-6 h-6 text-yellow-400" />
+    },
     {
       title: "Весеннее приключение (8 Марта)",
       status: "Завершен",
@@ -15,9 +41,13 @@ export default function Events() {
         "Шанс выпадения цветка 25% при сборе обычных цветов",
         "Уникальные награды: Элитры, Трезубец, Отделки брони",
         "Защита от дюпа (только натуральные цветы)"
-      ]
+      ],
+      icon: <Flower2 className="w-6 h-6 text-pink-400" />
     }
   ];
+
+  // Фильтруем ивенты, оставляя админские только для админов
+  const visibleEvents = events.filter(event => !event.adminOnly || user?.role === 'admin');
 
   return (
     <div className="min-h-screen w-full bg-background pb-20">
@@ -41,30 +71,35 @@ export default function Events() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 space-y-12">
-        {events.map((event, idx) => (
+        {visibleEvents.map((event, idx) => (
           <Card key={idx} className="bg-white/5 border-white/10 backdrop-blur-sm overflow-hidden border-none shadow-2xl">
             <div className="grid grid-cols-1 lg:grid-cols-2">
               {/* Image Side */}
               <div className="relative aspect-video lg:aspect-auto overflow-hidden group">
                 <img 
                   src={event.image} 
-                  alt="Торговец" 
+                  alt={event.title} 
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-60" />
                 <div className="absolute bottom-6 left-6 flex items-center gap-2">
-                  <Badge className="bg-emerald-500 text-white border-none px-3 py-1 font-bold">
+                  <Badge className={`${event.status === 'Завершен' ? 'bg-zinc-500' : 'bg-emerald-500'} text-white border-none px-3 py-1 font-bold`}>
                     {event.status}
                   </Badge>
-
+                  {event.endDate && (
+                    <Badge variant="outline" className="bg-white/5 border-white/20 text-white backdrop-blur-md">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      {event.endDate}
+                    </Badge>
+                  )}
                 </div>
               </div>
 
               {/* Content Side */}
               <div className="p-8 lg:p-12 flex flex-col justify-center">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 rounded-xl bg-pink-500/20">
-                    <Flower2 className="w-6 h-6 text-pink-400" />
+                  <div className="p-2 rounded-xl bg-primary/20">
+                    {event.icon}
                   </div>
                   <h2 className="text-3xl font-bold text-white tracking-tight">{event.title}</h2>
                 </div>
@@ -79,7 +114,7 @@ export default function Events() {
                       <MapPin className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-white font-bold text-sm">Где найти торговца?</h4>
+                      <h4 className="text-white font-bold text-sm">Где найти?</h4>
                       <p className="text-zinc-500 text-sm">{event.location}</p>
                     </div>
                   </div>
@@ -99,7 +134,17 @@ export default function Events() {
                   </div>
                 </div>
 
-
+                {event.bracketUrl && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full lg:w-fit bg-primary/10 border-primary/20 hover:bg-primary/20 text-primary font-bold py-6 rounded-xl transition-all hover:scale-105 group"
+                    onClick={() => window.open(event.bracketUrl, '_blank')}
+                  >
+                    <Trophy className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+                    Турнирная сетка
+                    <ExternalLink className="w-4 h-4 ml-2 opacity-50" />
+                  </Button>
+                )}
               </div>
             </div>
           </Card>
