@@ -418,6 +418,57 @@ export async function registerRoutes(
     }
   });
 
+  // Tournament API
+  app.get(api.tournament.list.path, async (req, res) => {
+    const matches = await storage.getTournamentMatches();
+    res.status(200).json(matches);
+  });
+
+  app.patch(api.tournament.updateMatch.path, async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const user = await storage.getUser(req.session.userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can update matches" });
+    }
+
+    try {
+      const id = parseInt(req.params.id);
+      const matchUpdate = api.tournament.updateMatch.input.parse(req.body);
+
+      const updated = await storage.updateTournamentMatch(id, matchUpdate);
+      if (!updated) {
+        return res.status(404).json({ message: "Match not found" });
+      }
+
+      res.status(200).json({ success: true });
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        return res.status(400).json({
+          message: err.errors[0].message,
+          field: err.errors[0].path.join('.'),
+        });
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post(api.tournament.reset.path, async (req, res) => {
+    if (!req.session?.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+
+    const user = await storage.getUser(req.session.userId);
+    if (!user || user.role !== "admin") {
+      return res.status(403).json({ message: "Only admins can reset the tournament" });
+    }
+
+    await storage.resetTournament();
+    res.status(200).json({ success: true });
+  });
+
   return httpServer;
 }
 

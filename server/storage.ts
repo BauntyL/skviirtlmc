@@ -1,6 +1,6 @@
 import { db } from "./db";
-import { users, clans, authCodes, griefReports, type User, type InsertUser, type Clan, type InsertClan, type GriefReport, type InsertGriefReport } from "@shared/schema";
-import { eq, and, gt, desc } from "drizzle-orm";
+import { users, clans, authCodes, griefReports, tournamentMatches, type User, type InsertUser, type Clan, type InsertClan, type GriefReport, type InsertGriefReport, type TournamentMatch, type InsertTournamentMatch } from "@shared/schema";
+import { eq, and, gt, desc, asc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
@@ -22,6 +22,11 @@ export interface IStorage {
   createGriefReport(report: InsertGriefReport): Promise<GriefReport>;
   getGriefReports(userId?: number): Promise<GriefReport[]>;
   updateGriefReportStatus(id: number, status: string): Promise<GriefReport | undefined>;
+
+  // Tournament
+  getTournamentMatches(): Promise<TournamentMatch[]>;
+  updateTournamentMatch(id: number, match: Partial<TournamentMatch>): Promise<TournamentMatch | undefined>;
+  resetTournament(): Promise<void>;
   
   sessionStore: session.Store;
 }
@@ -125,6 +130,49 @@ export class DatabaseStorage implements IStorage {
       .where(eq(griefReports.id, id))
       .returning();
     return updated;
+  }
+
+  async getTournamentMatches(): Promise<TournamentMatch[]> {
+    const matches = await db.select().from(tournamentMatches).orderBy(asc(tournamentMatches.round), asc(tournamentMatches.position));
+    
+    // If no matches exist, initialize them for 6 teams
+    if (matches.length === 0) {
+      await this.resetTournament();
+      return await db.select().from(tournamentMatches).orderBy(asc(tournamentMatches.round), asc(tournamentMatches.position));
+    }
+    
+    return matches;
+  }
+
+  async updateTournamentMatch(id: number, match: Partial<TournamentMatch>): Promise<TournamentMatch | undefined> {
+    const [updated] = await db.update(tournamentMatches)
+      .set(match)
+      .where(eq(tournamentMatches.id, id))
+      .returning();
+    return updated;
+  }
+
+  async resetTournament(): Promise<void> {
+    await db.delete(tournamentMatches);
+    
+    // 6 teams tournament structure:
+    // Round 1 (1/4 Finals): 4 matches, but only 2 needed for 6 teams?
+    // Actually, for 6 teams:
+    // Round 1: 2 matches (4 teams), 2 teams get a "bye" to semi-finals.
+    // Round 2: 2 matches (Semi-finals). 
+    // Round 3: 1 match (Final).
+    
+    // Position 0 and 1 in round 1 will be the matches.
+    // Round 1: 2 matches (for 4 teams, 2 teams get a bye)
+    await db.insert(tournamentMatches).values([
+      { round: 1, position: 0, player1: null, player2: null, status: "pending" },
+      { round: 1, position: 1, player1: null, player2: null, status: "pending" },
+      // Round 2: 2 semi-finals
+      { round: 2, position: 0, player1: null, player2: null, status: "pending" }, // winner of R1-P0 vs team with bye
+      { round: 2, position: 1, player1: null, player2: null, status: "pending" }, // winner of R1-P1 vs team with bye
+      // Round 3: Final
+      { round: 3, position: 0, player1: null, player2: null, status: "pending" },
+    ]);
   }
 }
 
