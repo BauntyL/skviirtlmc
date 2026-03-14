@@ -155,23 +155,16 @@ export class DatabaseStorage implements IStorage {
   async resetTournament(): Promise<void> {
     await db.delete(tournamentMatches);
     
-    // 6 teams tournament structure:
-    // Round 1 (1/4 Finals): 4 matches, but only 2 needed for 6 teams?
-    // Actually, for 6 teams:
-    // Round 1: 2 matches (4 teams), 2 teams get a "bye" to semi-finals.
-    // Round 2: 2 matches (Semi-finals). 
-    // Round 3: 1 match (Final).
+    // 4 teams tournament structure:
+    // Round 1 (Semi-finals): 2 matches
+    // Round 2 (Final): 1 match
     
-    // Position 0 and 1 in round 1 will be the matches.
-    // Round 1: 2 matches (for 4 teams, 2 teams get a bye)
     await db.insert(tournamentMatches).values([
+      // Round 1: 2 semi-finals
       { round: 1, position: 0, player1: null, player2: null, status: "pending" },
       { round: 1, position: 1, player1: null, player2: null, status: "pending" },
-      // Round 2: 2 semi-finals
-      { round: 2, position: 0, player1: null, player2: null, status: "pending" }, // winner of R1-P0 vs team with bye
-      { round: 2, position: 1, player1: null, player2: null, status: "pending" }, // winner of R1-P1 vs team with bye
-      // Round 3: Final
-      { round: 3, position: 0, player1: null, player2: null, status: "pending" },
+      // Round 2: Final
+      { round: 2, position: 0, player1: null, player2: null, status: "pending" },
     ]);
   }
 }

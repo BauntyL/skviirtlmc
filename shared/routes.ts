@@ -135,11 +135,9 @@ export const api = {
       method: 'PATCH' as const,
       path: '/api/tournament/matches/:id' as const,
       input: z.object({
-        player1: z.string().optional(),
-        player2: z.string().optional(),
-        score1: z.number().optional(),
-        score2: z.number().optional(),
-        winner: z.number().optional(),
+        player1: z.string().nullable().optional(),
+        player2: z.string().nullable().optional(),
+        winner: z.number().nullable().optional(),
         status: z.enum(['pending', 'live', 'completed']).optional(),
       }),
       responses: {

@@ -83,25 +83,20 @@ export default function TournamentBracket() {
   }
 
   const rounds = [
-    { name: "1/4 Финала", roundNum: 1 },
-    { name: "Полуфинал", roundNum: 2 },
-    { name: "Финал", roundNum: 3 }
+    { name: "Полуфинал", roundNum: 1 },
+    { name: "Финал", roundNum: 2 }
   ];
 
   const handleUpdateMatch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!editingMatch) return;
     
-    const formData = new FormData(e.currentTarget);
-    const p1 = formData.get("player1");
-    const p2 = formData.get("player2");
+    // We'll send only the fields that are allowed by the Zod schema
     const data = {
-      player1: p1 === "null" ? null : p1,
-      player2: p2 === "null" ? null : p2,
-      score1: parseInt(formData.get("score1") as string) || 0,
-      score2: parseInt(formData.get("score2") as string) || 0,
-      winner: formData.get("winner") === "null" ? null : parseInt(formData.get("winner") as string),
-      status: formData.get("status"),
+      player1: editingMatch.player1,
+      player2: editingMatch.player2,
+      winner: editingMatch.winner,
+      status: editingMatch.status,
     };
 
     updateMatchMutation.mutate({ id: editingMatch.id, data });
@@ -176,7 +171,6 @@ export default function TournamentBracket() {
                             </div>
                             <span className="font-bold truncate max-w-[120px]">{match.player1 || "Ожидание..."}</span>
                           </div>
-                          <span className="font-mono font-bold">{match.score1}</span>
                         </div>
 
                         {/* VS Divider */}
@@ -194,7 +188,6 @@ export default function TournamentBracket() {
                             </div>
                             <span className="font-bold truncate max-w-[120px]">{match.player2 || "Ожидание..."}</span>
                           </div>
-                          <span className="font-mono font-bold">{match.score2}</span>
                         </div>
                       </div>
 
@@ -219,52 +212,49 @@ export default function TournamentBracket() {
                               <DialogHeader>
                                 <DialogTitle>Редактировать матч #{match.id}</DialogTitle>
                               </DialogHeader>
-                              <form onSubmit={handleUpdateMatch} className="space-y-6 pt-4">
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                    <Label>Участник 1</Label>
-                                    <Select name="player1" defaultValue={match.player1 || "null"}>
-                                      <SelectTrigger className="bg-white/5 border-white/10">
-                                        <SelectValue placeholder="Выберите игрока" />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                        <SelectItem value="null">Пусто</SelectItem>
-                                        {users?.map(u => (
-                                          <SelectItem key={u.id} value={u.username}>{u.username}</SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label>Счет 1</Label>
-                                    <Input name="score1" type="number" defaultValue={match.score1} className="bg-white/5 border-white/10" />
-                                  </div>
+                              <form onSubmit={handleUpdateMatch} className="space-y-4 pt-4">
+                                <div className="space-y-2">
+                                  <Label>Участник 1</Label>
+                                  <Select 
+                                    value={editingMatch?.player1 || "null"} 
+                                    onValueChange={(val) => setEditingMatch(prev => prev ? {...prev, player1: val === "null" ? null : val} : null)}
+                                  >
+                                    <SelectTrigger className="bg-white/5 border-white/10">
+                                      <SelectValue placeholder="Выберите игрока" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                      <SelectItem value="null">Пусто</SelectItem>
+                                      {users?.map(u => (
+                                        <SelectItem key={u.id} value={u.username}>{u.username}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-2">
-                                    <Label>Участник 2</Label>
-                                    <Select name="player2" defaultValue={match.player2 || "null"}>
-                                      <SelectTrigger className="bg-white/5 border-white/10">
-                                        <SelectValue placeholder="Выберите игрока" />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                        <SelectItem value="null">Пусто</SelectItem>
-                                        {users?.map(u => (
-                                          <SelectItem key={u.id} value={u.username}>{u.username}</SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  </div>
-                                  <div className="space-y-2">
-                                    <Label>Счет 2</Label>
-                                    <Input name="score2" type="number" defaultValue={match.score2} className="bg-white/5 border-white/10" />
-                                  </div>
+                                <div className="space-y-2">
+                                  <Label>Участник 2</Label>
+                                  <Select 
+                                    value={editingMatch?.player2 || "null"} 
+                                    onValueChange={(val) => setEditingMatch(prev => prev ? {...prev, player2: val === "null" ? null : val} : null)}
+                                  >
+                                    <SelectTrigger className="bg-white/5 border-white/10">
+                                      <SelectValue placeholder="Выберите игрока" />
+                                    </SelectTrigger>
+                                    <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                      <SelectItem value="null">Пусто</SelectItem>
+                                      {users?.map(u => (
+                                        <SelectItem key={u.id} value={u.username}>{u.username}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
                                 </div>
 
                                 <div className="space-y-2">
                                   <Label>Победитель</Label>
-                                  <Select name="winner" defaultValue={match.winner?.toString() || "null"}>
+                                  <Select 
+                                    value={editingMatch?.winner?.toString() || "null"} 
+                                    onValueChange={(val) => setEditingMatch(prev => prev ? {...prev, winner: val === "null" ? null : parseInt(val)} : null)}
+                                  >
                                     <SelectTrigger className="bg-white/5 border-white/10">
                                       <SelectValue placeholder="Не определен" />
                                     </SelectTrigger>
@@ -278,7 +268,10 @@ export default function TournamentBracket() {
 
                                 <div className="space-y-2">
                                   <Label>Статус</Label>
-                                  <Select name="status" defaultValue={match.status}>
+                                  <Select 
+                                    value={editingMatch?.status} 
+                                    onValueChange={(val: any) => setEditingMatch(prev => prev ? {...prev, status: val} : null)}
+                                  >
                                     <SelectTrigger className="bg-white/5 border-white/10">
                                       <SelectValue />
                                     </SelectTrigger>
@@ -315,11 +308,11 @@ export default function TournamentBracket() {
               Инструкция для администратора
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-zinc-400">
-              <ul className="space-y-3 list-disc list-inside">
-                <li>Используйте кнопку <Edit2 className="w-3 h-3 inline" /> на карточке матча для изменения участников и счета.</li>
-                <li>Для 6 команд: заполните 2 матча в 1/4 финала. Победители пройдут в полуфинал.</li>
-                <li>Вы можете заранее вписать "Bye" или оставить участников пустыми для тех, кто проходит без боя.</li>
-              </ul>
+            <ul className="space-y-3 list-disc list-inside">
+              <li>Используйте кнопку <Edit2 className="w-3 h-3 inline" /> на карточке матча для изменения участников.</li>
+              <li>Для 4 команд: заполните 2 матча в Полуфинале. Победители пройдут в Финал.</li>
+              <li>Вы можете оставлять участников пустыми, если они еще не определены.</li>
+            </ul>
               <ul className="space-y-3 list-disc list-inside">
                 <li>Статус "LIVE" добавит пульсирующий бейдж на карточку матча.</li>
                 <li>После завершения матча выберите победителя, чтобы подсветить его карточку.</li>
