@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { users, clans, authCodes, griefReports, tournamentMatches, type User, type InsertUser, type Clan, type InsertClan, type GriefReport, type InsertGriefReport, type TournamentMatch, type InsertTournamentMatch } from "@shared/schema";
+import { users, clans, authCodes, griefReports, type User, type InsertUser, type Clan, type InsertClan, type GriefReport, type InsertGriefReport } from "@shared/schema";
 import { eq, and, gt, desc, asc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -23,11 +23,6 @@ export interface IStorage {
   getGriefReports(userId?: number): Promise<GriefReport[]>;
   updateGriefReportStatus(id: number, status: string): Promise<GriefReport | undefined>;
 
-  // Tournament
-  getTournamentMatches(): Promise<TournamentMatch[]>;
-  updateTournamentMatch(id: number, match: Partial<TournamentMatch>): Promise<TournamentMatch | undefined>;
-  resetTournament(): Promise<void>;
-  
   sessionStore: session.Store;
 }
 
@@ -130,75 +125,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(griefReports.id, id))
       .returning();
     return updated;
-  }
-
-  async getTournamentMatches(): Promise<TournamentMatch[]> {
-    const matches = await db.select().from(tournamentMatches).orderBy(asc(tournamentMatches.round), asc(tournamentMatches.position));
-    
-    // If no matches exist, initialize them for 6 teams
-    if (matches.length === 0) {
-      await this.resetTournament();
-      return await db.select().from(tournamentMatches).orderBy(asc(tournamentMatches.round), asc(tournamentMatches.position));
-    }
-    
-    return matches;
-  }
-
-  async updateTournamentMatch(id: number, match: Partial<TournamentMatch>): Promise<TournamentMatch | undefined> {
-    const [updated] = await db.update(tournamentMatches)
-      .set(match)
-      .where(eq(tournamentMatches.id, id))
-      .returning();
-    
-    if (!updated) return undefined;
-
-    // Automatic promotion logic for a 4-team tournament
-    // Round 1 (Semi-finals): Pos 0 and Pos 1
-    // Round 2 (Final): Pos 0
-    if (updated.round === 1 && updated.winner !== null && updated.status === 'completed') {
-      const winnerName = updated.winner === 1 ? updated.player1 : updated.player2;
-      
-      if (winnerName) {
-        // Find the final match (Round 2, Position 0)
-        const [finalMatch] = await db.select().from(tournamentMatches)
-          .where(and(eq(tournamentMatches.round, 2), eq(tournamentMatches.position, 0)));
-        
-        if (finalMatch) {
-          // If the semi-final was position 0, winner goes to player1 of final.
-          // If the semi-final was position 1, winner goes to player2 of final.
-          const updateData: any = {};
-          if (updated.position === 0) {
-            updateData.player1 = winnerName;
-          } else if (updated.position === 1) {
-            updateData.player2 = winnerName;
-          }
-
-          if (Object.keys(updateData).length > 0) {
-            await db.update(tournamentMatches)
-              .set(updateData)
-              .where(eq(tournamentMatches.id, finalMatch.id));
-          }
-        }
-      }
-    }
-
-    return updated;
-  }
-
-  async resetTournament(): Promise<void> {
-    await db.delete(tournamentMatches);
-    
-    // 4 teams tournament structure:
-    // Round 1 (Semi-finals): 2 matches
-    // Round 2 (Final): 1 match
-    
-    await db.insert(tournamentMatches).values([
-      // Round 1: 2 semi-finals
-      { round: 1, position: 0, player1: null, player2: null, status: "pending" },
-      { round: 1, position: 1, player1: null, player2: null, status: "pending" },
-      // Round 2: Final
-      { round: 2, position: 0, player1: null, player2: null, status: "pending" },
-    ]);
   }
 }
 

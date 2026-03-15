@@ -123,38 +123,6 @@ export const api = {
       },
     },
   },
-  tournament: {
-    list: {
-      method: 'GET' as const,
-      path: '/api/tournament/matches' as const,
-      responses: {
-        200: z.array(z.any()), // TournamentMatch[]
-      },
-    },
-    updateMatch: {
-      method: 'PATCH' as const,
-      path: '/api/tournament/matches/:id' as const,
-      input: z.object({
-        player1: z.string().nullable().optional(),
-        player2: z.string().nullable().optional(),
-        winner: z.number().nullable().optional(),
-        status: z.enum(['pending', 'live', 'completed']).optional(),
-      }),
-      responses: {
-        200: z.object({ success: z.boolean() }),
-        401: errorSchemas.unauthorized,
-        404: errorSchemas.notFound,
-      },
-    },
-    reset: {
-      method: 'POST' as const,
-      path: '/api/tournament/reset' as const,
-      responses: {
-        200: z.object({ success: z.boolean() }),
-        401: errorSchemas.unauthorized,
-      },
-    },
-  },
 };
 
 export function buildUrl(path: string, params?: Record<string, string | number>): string {

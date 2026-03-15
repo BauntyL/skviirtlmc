@@ -16,23 +16,6 @@ export default function Events() {
 
   const events = [
     {
-      title: "Турнир по дуэлям",
-      status: "Скоро",
-      endDate: tomorrowFormatted,
-      description: "Присоединяйтесь к нашему грандиозному турниру по дуэлям! Докажите свое мастерство владения мечом и луком в честных поединках один на один. Победителей ждут легендарные награды!",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&q=80&w=1000",
-      location: "Арена для ивентов (/warp event_arena)",
-      features: [
-        "Турнирная сетка на вылет",
-        "Главный приз: Уникальный титул и набор брони",
-        "Все участники получат поощрительные призы",
-        "Регистрация на спавне за 15 минут до начала"
-      ],
-      bracketUrl: "/tournament-bracket", // Ссылка на внутреннюю страницу
-      adminOnly: true,
-      icon: <Trophy className="w-6 h-6 text-yellow-400" />
-    },
-    {
       title: "Весеннее приключение (8 Марта)",
       status: "Завершен",
       endDate: "",

@@ -84,22 +84,6 @@ export const insertAuthCodeSchema = createInsertSchema(authCodes).pick({
   expiresAt: true,
 });
 
-export const tournamentMatches = pgTable("tournament_matches", {
-  id: serial("id").primaryKey(),
-  round: integer("round").notNull(), // 1: 1/4, 2: semi-final, 3: final
-  position: integer("position").notNull(), // index within round
-  player1: text("player1"), // username
-  player2: text("player2"), // username
-  score1: integer("score1").default(0),
-  score2: integer("score2").default(0),
-  winner: integer("winner"), // 1 or 2
-  status: text("status").default("pending").notNull(), // pending, live, completed
-});
-
-export const insertTournamentMatchSchema = createInsertSchema(tournamentMatches).omit({ id: true });
-export type TournamentMatch = typeof tournamentMatches.$inferSelect;
-export type InsertTournamentMatch = z.infer<typeof insertTournamentMatchSchema>;
-
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type Clan = typeof clans.$inferSelect;
