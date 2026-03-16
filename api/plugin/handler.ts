@@ -204,7 +204,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                     await db.insert(clans).values({
                         name: clanName,
                         leader: c.leader || "Unknown",
-                        membersCount: c.membersCount || 1,
+                        membersCount: c.membersCount !== undefined ? c.membersCount : 1,
                         rank: c.rank || 0,
                         balance: c.balance ? c.balance.toString() : "0",
                         kdr: kdrStr
@@ -212,7 +212,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
                 } else {
                     await db.update(clans).set({
                         leader: c.leader || existing[0].leader,
-                        membersCount: c.membersCount || existing[0].membersCount,
+                        membersCount: c.membersCount !== undefined ? c.membersCount : existing[0].membersCount,
                         rank: c.rank || existing[0].rank,
                         balance: c.balance ? c.balance.toString() : existing[0].balance,
                         kdr: kdrStr
