@@ -192,6 +192,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         // Update Clans List (Full Sync)
         if (Array.isArray(clansList)) {
+            const incomingClanNames = clansList
+                .map(c => c.name ? c.name.replace(/[\[\]]/g, "") : "")
+                .filter(name => name !== "");
+
+            // Remove clans that are no longer in the list (if we have at least one valid clan from plugin)
+            if (incomingClanNames.length > 0) {
+                const allStoredClans = await db.select().from(clans);
+                for (const storedClan of allStoredClans) {
+                    if (!incomingClanNames.includes(storedClan.name)) {
+                        await db.delete(clans).where(eq(clans.name, storedClan.name));
+                    }
+                }
+            }
+
             for (const c of clansList) {
                 const clanName = c.name ? c.name.replace(/[\[\]]/g, "") : "";
                 if (!clanName) continue;

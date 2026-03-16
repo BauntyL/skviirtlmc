@@ -29,7 +29,7 @@ export async function registerRoutes(
   );
 
   // === PLUGIN API ===
-  app.post("/api/plugin/handler", async (req, res) => {
+  const pluginHandler = async (req: any, res: any) => {
     // Basic API Key check
     const body = req.body || {};
     const query = req.query || {};
@@ -94,7 +94,7 @@ export async function registerRoutes(
           const [updatedUser] = await db.select().from(users).where(eq(users.id, authCode.userId));
           return res.status(200).json({ 
               success: true, 
-              user: updatedUser ? {
+              user: updatedUser ? { 
                   id: updatedUser.id,
                   username: updatedUser.username,
                   balance: updatedUser.balance,
@@ -166,7 +166,7 @@ export async function registerRoutes(
                           if (p.deaths) deaths = parseInt(p.deaths.toString().replace(/[^0-9]+/g,""));
                       } catch (e) {}
 
-                      await db.update(users).set({ 
+                      await db.update(users).set({
                           balance: isNaN(balance) ? 0 : Math.round(balance),
                           realBalance: isNaN(realBalance) ? 0 : Math.round(realBalance),
                           clan: p.clan ? p.clan.replace(/[\[\]]/g, "") : null,
@@ -227,7 +227,11 @@ export async function registerRoutes(
         console.error('Plugin handler error:', error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
-  });
+  };
+
+  app.post("/api/plugin/handler", pluginHandler);
+  app.post("/api/plugin/sync", pluginHandler);
+  app.post("/api/sync", pluginHandler);
 
   app.get(api.auth.me.path, async (req, res) => {
     if (!req.session?.userId) {
