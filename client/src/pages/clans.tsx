@@ -104,7 +104,7 @@ export default function Clans() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
-                  {clans?.map((clan, idx) => (
+                  {clans?.sort((a, b) => (b.membersCount || 0) - (a.membersCount || 0)).map((clan, idx) => (
                     <tr key={clan.id} className="hover:bg-white/[0.03] transition-all group">
                       <td className="px-8 py-6 whitespace-nowrap">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-lg shadow-inner
