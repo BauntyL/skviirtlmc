@@ -101,7 +101,6 @@ export default function Clans() {
                     <th className="px-8 py-5 text-xs font-bold tracking-widest text-muted-foreground uppercase">Команда</th>
                     <th className="px-8 py-5 text-xs font-bold tracking-widest text-muted-foreground uppercase">Лидер</th>
                     <th className="px-8 py-5 text-xs font-bold tracking-widest text-muted-foreground uppercase text-center">Участники</th>
-                    <th className="px-8 py-5 text-xs font-bold tracking-widest text-muted-foreground uppercase text-right">Казна</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -134,12 +133,6 @@ export default function Clans() {
                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-sm font-semibold">
                           <Users className="w-3.5 h-3.5" />
                           {clan.membersCount}
-                        </div>
-                      </td>
-                      <td className="px-8 py-6 whitespace-nowrap text-right">
-                        <div className="inline-flex flex-col items-end">
-                          <span className="text-emerald-400 font-mono font-bold text-lg">${(parseFloat(clan.balance || "0")).toLocaleString()}</span>
-                          <span className="text-[10px] text-muted-foreground uppercase">Баланс банка</span>
                         </div>
                       </td>
                     </tr>
